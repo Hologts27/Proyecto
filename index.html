@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inicio | Catálogo de Películas y Series</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #1e1e1e;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #e50914;
+    }
+
+    p {
+      margin-bottom: 30px;
+      color: #ccc;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      background-color: #e50914;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: #b20710;
+    }
+  </style>
+
+  <script>
+    // Redirigir a dashboard si ya hay sesión iniciada
+    if (localStorage.getItem("usuarioActual")) {
+      window.location.href = "dash.html";
+    }
+  </script>
+
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎬 Bienvenido</h1>
+    <p>Accede a tu catálogo de películas y series favoritas.</p>
+    <a class="btn" href="login.html">Iniciar Sesión</a>
+    <a class="btn" href="register.html">Registrarse</a>
+  </div>
+
+</body>
+</html>

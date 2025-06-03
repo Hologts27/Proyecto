@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hub - Catálogo de Películas y Series</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+    }
+    header {
+      text-align: center;
+      padding: 20px 10px;
+      background-color: #1c1c1c;
+      color: #e50914;
+      font-weight: bold;
+      font-size: 1.8rem;
+    }
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #1c1c1c;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
+      text-align: center;
+    }
+    main h2 {
+      margin-bottom: 30px;
+      color: #e50914;
+    }
+    main button, main a.button-link {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 12px 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      background-color: #e50914;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    main button:hover, main a.button-link:hover {
+      background-color: #b20710;
+    }
+    footer {
+      text-align: center;
+      padding: 20px 10px;
+      background-color: #1c1c1c;
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 80px;
+    }
+    /* Toast notification styles */
+    #toast-container {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 220px;
+      max-width: 350px;
+      background: #232323;
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-shadow: 0 2px 12px rgba(229,9,20,0.18);
+      opacity: 0.97;
+      pointer-events: auto;
+      transition: opacity 0.3s, transform 0.3s;
+      animation: toastIn 0.3s;
+    }
+    .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
+    .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
+    .toast-info { background: linear-gradient(90deg, #232526 0%, #414345 100%); color: #fff; }
+    .toast.hide {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.98);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px) scale(0.98); }
+      to { opacity: 0.97; transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎬 Catálogo de Películas y Series</h1>
+  </header>
+
+  <main>
+    <h2>Bienvenido, <span id="usuario-nombre"></span></h2>
+  
+    <a href="peliculas.html" class="button-link">Películas</a>
+    <a href="series.html" class="button-link">Series</a>
+    <a href="favoritos.html" class="button-link">Favoritos</a>
+    <a href="manage.html" class="button-link">Gestionar cuenta</a> <!-- NUEVO BOTÓN -->
+    
+    <button id="logout-btn">Cerrar sesión</button>
+  </main>
+  
+  <!-- Toast notification container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <footer>
+    © 2025 Catálogo Cine & Series. Todos los derechos reservados.
+  </footer>
+
+  <script>
+    // Verificar usuario
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!loggedInUser || !loggedInUser.username) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById('usuario-nombre').textContent = loggedInUser.username;
+    }
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      const confirmLogout = confirm("¿Seguro que quieres cerrar sesión?");
+      if (confirmLogout) {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "index.html";
+      }
+    });
+
+    // Toast notification system
+    function showToast(message, type = 'info', duration = 3500) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hide');
+        toast.addEventListener('transitionend', () => toast.remove());
+      }, duration);
+    }
+
+    // Safe fetch wrapper for error handling
+    async function safeFetch(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        if (!res.ok) {
+          let errMsg = `Error ${res.status}`;
+          try {
+            const data = await res.json();
+            errMsg = data.error || errMsg;
+          } catch {}
+          throw new Error(errMsg);
+        }
+        return await res.json();
+      } catch (err) {
+        showToast(err.message || 'Error de conexión con el servidor.', 'error');
+        throw err;
+      }
+    }
+
+    // Ejemplo de uso en agregar/eliminar favoritos:
+    // Reemplaza fetch por safeFetch y muestra showToast en éxito/error
+  </script>
+
+</body>
+</html>
