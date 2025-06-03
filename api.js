@@ -6,6 +6,11 @@ const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'SIGMASIGMABOY482813271371231';
+const JWT_EXPIRA = '7d';
+// Lista negra de JWT revocados (en memoria, debe estar antes de cualquier uso)
+const jwtBlacklist = new Set();
 
 // Mapa global para tokens de usuario
 const userTokens = new Map();
@@ -51,26 +56,21 @@ app.use(morgan('dev'));
   }
 })();
 
-// Al iniciar el servidor, cargar tokens persistentes de la BD a memoria
+// --- JWT Blacklist en BD (opcional, para persistencia tras reinicio) ---
 (async () => {
   const conn = await mysql.createConnection(dbConfig);
   try {
-    await conn.execute(`CREATE TABLE IF NOT EXISTS sesiones (
-      token VARCHAR(128) PRIMARY KEY,
-      user_id INT,
-      creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    await conn.execute(`CREATE TABLE IF NOT EXISTS jwt_blacklist (
+      token VARCHAR(512) PRIMARY KEY,
+      revocado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
-    // Cargar tokens existentes
-    const [rows] = await conn.execute('SELECT token, user_id FROM sesiones');
+    // Cargar tokens revocados existentes
+    const [rows] = await conn.execute('SELECT token FROM jwt_blacklist');
     for (const row of rows) {
-      // Buscar usuario y rol
-      const [users] = await conn.execute('SELECT id, username, role FROM usuarios WHERE id = ?', [row.user_id]);
-      if (users.length) {
-        userTokens.set(row.token, { id: users[0].id, username: users[0].username, role: users[0].role });
-      }
+      jwtBlacklist.add(row.token);
     }
   } catch (e) {
-    console.error('Error inicializando sesiones persistentes:', e);
+    console.error('Error inicializando blacklist JWT:', e);
   } finally {
     await conn.end();
   }
@@ -124,10 +124,8 @@ app.post('/login', async (req, res) => {
     const user = users[0];
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-    const token = Math.random().toString(36).slice(2) + Date.now();
-    userTokens.set(token, { id: user.id, username: user.username, role: user.role });
-    // Guardar token en BD
-    await conn.execute('INSERT INTO sesiones (token, user_id) VALUES (?, ?)', [token, user.id]);
+    const payload = { id: user.id, username: user.username, role: user.role };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRA });
     res.json({ ok: true, user: { id: user.id, username: user.username, email: user.email, role: user.role }, token });
   } catch (e) {
     res.status(500).json({ error: 'Error en el login' });
@@ -136,29 +134,31 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Middleware para autenticar token (persistente)
+// Middleware para autenticar JWT y lista negra
 async function authenticateToken(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'No autorizado' });
-  // Primero busca en memoria
-  if (userTokens.has(token)) {
-    req.user = userTokens.get(token);
-    return next();
-  }
-  // Si no está en memoria, busca en BD
+  let authHeader = req.headers['authorization'];
+  if (!authHeader) return res.status(401).json({ error: 'No autorizado' });
+  if (authHeader.startsWith('Bearer ')) authHeader = authHeader.slice(7);
+  const token = authHeader;
+  // Verifica si está en la blacklist (memoria)
+  if (jwtBlacklist.has(token)) return res.status(401).json({ error: 'Token revocado' });
+  // Verifica si está en la blacklist (BD)
   const conn = await mysql.createConnection(dbConfig);
-  const [rows] = await conn.execute('SELECT user_id FROM sesiones WHERE token = ?', [token]);
-  if (!rows.length) {
+  const [rows] = await conn.execute('SELECT token FROM jwt_blacklist WHERE token = ?', [token]);
+  if (rows.length) {
+    jwtBlacklist.add(token);
     await conn.end();
-    return res.status(401).json({ error: 'No autorizado' });
+    return res.status(401).json({ error: 'Token revocado' });
   }
-  // Busca usuario y rol
-  const [users] = await conn.execute('SELECT id, username, role FROM usuarios WHERE id = ?', [rows[0].user_id]);
-  await conn.end();
-  if (!users.length) return res.status(401).json({ error: 'No autorizado' });
-  req.user = { id: users[0].id, username: users[0].username, role: users[0].role };
-  userTokens.set(token, req.user); // cachea en memoria
-  next();
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
+    await conn.end();
+    next();
+  } catch (e) {
+    await conn.end();
+    return res.status(401).json({ error: 'Token inválido o expirado' });
+  }
 }
 
 // --- Middleware para verificar admin ---
@@ -376,12 +376,15 @@ app.get('/admin/favoritos_total', authenticateToken, requireAdmin, async (req, r
   }
 });
 
-// Endpoint para logout (opcional, para limpiar sesión)
+// Endpoint para logout (revoca el JWT)
 app.post('/logout', authenticateToken, async (req, res) => {
-  const token = req.headers['authorization'];
+  let authHeader = req.headers['authorization'];
+  if (authHeader.startsWith('Bearer ')) authHeader = authHeader.slice(7);
+  const token = authHeader;
+  jwtBlacklist.add(token);
+  // Guarda en BD para persistencia
   const conn = await mysql.createConnection(dbConfig);
-  await conn.execute('DELETE FROM sesiones WHERE token = ?', [token]);
-  userTokens.delete(token);
+  await conn.execute('INSERT IGNORE INTO jwt_blacklist (token) VALUES (?)', [token]);
   await conn.end();
   res.json({ ok: true });
 });

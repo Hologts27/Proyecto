@@ -171,9 +171,12 @@
         if (data.ok && data.user) {
           // Guardar usuario logeado (guardar id y username)
           localStorage.setItem("loggedInUser", JSON.stringify(data.user));
-          // Guardar token y rol para admin.html
-          localStorage.setItem("adminToken", data.token);
-          localStorage.setItem("adminRole", data.user.role);
+          // Guardar token para admin.html si es admin
+          if (data.user.role === 'admin') {
+            localStorage.setItem("adminToken", data.token);
+          } else {
+            localStorage.removeItem("adminToken");
+          }
           window.location.href = "dash.html";
         } else {
           message.textContent = data.error || "Error de autenticación.";
