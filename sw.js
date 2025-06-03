@@ -6,7 +6,6 @@ const urlsToCache = [
   'login.html',
   'register.html',
   'dash.html',
-  'admin.html',
   'favoritos.html',
   'peliculas.html',
   'peliculass.html',
