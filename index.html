@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inicio | Catálogo de Películas y Series</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
   <style>
     body {
       background-color: #121212;
@@ -62,6 +64,12 @@
     // Redirigir a dashboard si ya hay sesión iniciada
     if (localStorage.getItem("usuarioActual")) {
       window.location.href = "dash.html";
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
     }
   </script>
 

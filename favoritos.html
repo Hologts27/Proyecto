@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Favoritos - Catálogo</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
   <style>
     body {
       margin: 0;
@@ -88,12 +97,17 @@
       display: flex;
       flex-direction: column;
       color: #ccc;
-      transition: transform 0.2s ease;
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1), opacity 0.25s;
       user-select: none;
     }
     .card:hover {
       transform: scale(1.05);
       box-shadow: 0 0 15px #e50914;
+    }
+    .card.removing {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.25s, transform 0.25s;
     }
     .card img {
       width: 100%;
@@ -131,7 +145,10 @@
       padding: 8px 0;
       cursor: pointer;
       font-size: 1rem;
-      transition: background-color 0.3s ease;
+      transition: background 0.3s, transform 0.15s;
+    }
+    .remove-fav-btn:active {
+      transform: scale(0.93);
     }
     .remove-fav-btn:hover {
       background-color: #b20710;
@@ -176,7 +193,7 @@
   opacity: 0.97;
   pointer-events: auto;
   transition: opacity 0.3s, transform 0.3s;
-  animation: toastIn 0.3s;
+  animation: toastIn 0.3s, toastOut 0.3s 2.7s;
 }
 .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
 .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
@@ -189,6 +206,9 @@
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(-20px) scale(0.98); }
   to { opacity: 0.97; transform: none; }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(-20px) scale(0.98); }
 }
   </style>
 </head>
@@ -303,8 +323,9 @@ async function loadFavoritos() {
       try {
         await quitarFavorito(itemId, tipo);
         showToast(`Eliminaste "${titulo}" de favoritos.`, 'success');
-        // Eliminar la tarjeta del DOM de inmediato
-        card.remove();
+        // Eliminar la tarjeta del DOM de inmediato con animación
+        card.classList.add('removing');
+        setTimeout(() => card.remove(), 250);
         // Si ya no quedan favoritos, mostrar mensaje
         if (!favoritosContainer.querySelector('.card')) {
           favoritosContainer.innerHTML = '<p style="color:#ccc; text-align:center;">No tienes favoritos.</p>';

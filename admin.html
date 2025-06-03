@@ -111,8 +111,11 @@
       if (!res.ok) return showToast('Error cargando usuarios', 'error');
       const usuarios = await res.json();
       const tbody = document.querySelector('#usuarios-table tbody');
-      tbody.innerHTML = usuarios.map(u => `
-        <tr class="fade-in">
+      tbody.innerHTML = '';
+      usuarios.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'fade-in';
+        tr.innerHTML = `
           <td>${u.id}</td>
           <td>${u.username}</td>
           <td>${u.email}</td>
@@ -127,8 +130,9 @@
             <button class="btn btn-anim" style="background:#444;" onclick="abrirResetModal(${u.id}, '${u.username}')">Resetear contraseña</button>
             <button class="btn btn-danger btn-anim" onclick="eliminarUsuario(${u.id}, this)">Eliminar</button>
           </td>
-        </tr>
-      `).join('');
+        `;
+        tbody.appendChild(tr);
+      });
     }
     async function cambiarRol(userId, btn) {
       const select = document.querySelector(`select[data-id='${userId}']`);
@@ -250,26 +254,37 @@
     async function eliminarUsuario(userId, btn) {
       if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
       btn.disabled = true;
-      const res = await fetch('http://localhost:3001/admin/eliminar_usuario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: adminToken },
-        body: JSON.stringify({ user_id: userId })
-      });
-      if (res.ok) {
-        showToast('Usuario eliminado', 'success');
-        cargarUsuarios();
-      } else {
-        showToast('Error al eliminar usuario', 'error');
-      }
-      btn.disabled = false;
+      const tr = btn.closest('tr');
+      tr.classList.add('fade-out');
+      setTimeout(async () => {
+        const res = await fetch('http://localhost:3001/admin/eliminar_usuario', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: adminToken },
+          body: JSON.stringify({ user_id: userId })
+        });
+        if (res.ok) {
+          showToast('Usuario eliminado', 'success');
+          tr.remove();
+        } else {
+          showToast('Error al eliminar usuario', 'error');
+          tr.classList.remove('fade-out');
+        }
+        btn.disabled = false;
+      }, 250);
     }
     cargarUsuarios();
 
-    // PWA: registrar service worker
+    // PWA: registrar service worker y link manifest
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});
       });
+    }
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = 'manifest.json';
+      document.head.appendChild(link);
     }
   </script>
 </body>

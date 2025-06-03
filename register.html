@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro | Catálogo de Películas y Series</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
   <style>
     body {
       background-color: #121212;
@@ -92,7 +101,7 @@
       opacity: 0.97;
       pointer-events: auto;
       transition: opacity 0.3s, transform 0.3s;
-      animation: toastIn 0.3s;
+      animation: toastIn 0.3s, toastOut 0.3s 2.7s;
     }
     .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
     .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
@@ -105,6 +114,9 @@
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.98); }
       to { opacity: 0.97; transform: none; }
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-20px) scale(0.98); }
     }
   </style>
 </head>

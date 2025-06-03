@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestionar Cuenta</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
   <style>
     body {
       background-color: #121212;
@@ -237,6 +246,13 @@
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.98); }
       to { opacity: 0.97; transform: none; }
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOutModal {
+      to { opacity: 0; pointer-events: none; }
     }
   </style>
 </head>

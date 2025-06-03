@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Películas - Catálogo</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
   <style>
     body {
       margin: 0;
@@ -103,8 +112,13 @@
       display: flex;
       flex-direction: column;
       color: #ccc;
-      transition: transform 0.2s ease;
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1), opacity 0.25s;
       user-select: none;
+    }
+    .card.removing {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.25s, transform 0.25s;
     }
     .card:hover {
       transform: scale(1.05);
@@ -144,7 +158,7 @@
       cursor: pointer;
       font-size: 1.6rem;
       color: #eee;
-      transition: color 0.3s ease;
+      transition: color 0.3s ease, transform 0.15s;
       user-select: none;
       z-index: 2;
       filter: drop-shadow(0 0 2px black);
@@ -152,6 +166,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .fav-star-btn:active {
+      transform: scale(0.93);
     }
     .fav-star-btn.favorito svg {
       fill: #f1c40f;
@@ -201,7 +218,7 @@
       opacity: 0.97;
       pointer-events: auto;
       transition: opacity 0.3s, transform 0.3s;
-      animation: toastIn 0.3s;
+      animation: toastIn 0.3s, toastOut 0.3s 2.7s;
     }
     .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
     .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
@@ -214,6 +231,9 @@
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.98); }
       to { opacity: 0.97; transform: none; }
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-20px) scale(0.98); }
     }
     /* Paginación */
     .pagination {
@@ -248,6 +268,10 @@
       align-items: center;
       justify-content: center;
       transition: opacity 0.3s;
+      animation: fadeInModal 0.3s;
+    }
+    .modal.hide {
+      animation: fadeOutModal 0.3s forwards;
     }
     .modal-content {
       background: #181818;
@@ -261,6 +285,13 @@
       box-shadow: 0 0 30px #000;
       padding: 30px 20px 20px 20px;
       outline: none;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOutModal {
+      to { opacity: 0; pointer-events: none; }
     }
     .modal-close {
       position: absolute;
@@ -343,6 +374,40 @@
       .modal-content { padding: 10px 2vw 10px 2vw; }
       .modal-movie-header { flex-direction: column; align-items: center; }
       .modal-movie-poster { width: 90vw; max-width: 220px; }
+    }
+    /* Animaciones suaves para favoritos, modales y notificaciones */
+    .card {
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1), opacity 0.25s;
+    }
+    .card.removing {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .fav-star-btn {
+      transition: color 0.3s, transform 0.15s;
+    }
+    .fav-star-btn:active {
+      transform: scale(0.93);
+    }
+    .modal {
+      animation: fadeInModal 0.3s;
+    }
+    .modal.hide {
+      animation: fadeOutModal 0.3s forwards;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOutModal {
+      to { opacity: 0; pointer-events: none; }
+    }
+    .toast {
+      animation: toastIn 0.3s, toastOut 0.3s 2.7s;
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-20px) scale(0.98); }
     }
   </style>
 </head>
