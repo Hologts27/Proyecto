@@ -298,6 +298,12 @@
   </div>
 
   <script>
+    // JWT: obtener token
+    const jwt = localStorage.getItem('jwt');
+    if (!jwt) {
+      window.location.href = 'login.html';
+    }
+
     // Toast notification system
     function showToast(message, type = 'info', duration = 3500) {
       const container = document.getElementById('toast-container');
@@ -311,8 +317,12 @@
       }, duration);
     }
 
-    // Safe fetch wrapper for error handling
+    // Safe fetch wrapper for error handling y JWT
     async function safeFetch(url, options = {}) {
+      options.headers = options.headers || {};
+      if (url.startsWith('http://localhost:3001')) {
+        options.headers['Authorization'] = 'Bearer ' + jwt;
+      }
       try {
         const res = await fetch(url, options);
         if (!res.ok) {
@@ -332,7 +342,7 @@
 
     const usuario = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!usuario || !usuario.id) {
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     } else {
       document.getElementById("usuario-nombre").textContent = usuario.username;
     }
@@ -418,6 +428,21 @@
         } catch {}
       });
     }
+
+    // Logout mejorado: limpiar JWT y usuario
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      if (jwt) {
+        try {
+          await fetch('http://localhost:3001/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + jwt }
+          });
+        } catch {}
+      }
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
+    });
   </script>
 </body>
 </html>

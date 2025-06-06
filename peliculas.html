@@ -419,6 +419,7 @@
     <a href="peliculas.html" aria-current="page">Películas</a>
     <a href="series.html">Series</a>
     <a href="favoritos.html">Favoritos</a>
+    <a href="guardados.html" aria-current="page" style="background:#333;color:#eee;font-weight:bold;">Ver más tarde</a>
     <button id="logout-btn" class="btn-logout">Cerrar sesión</button>
   </nav>
 
@@ -484,10 +485,20 @@
     const nextPageBtn = document.getElementById('next-page');
     const pageIndicator = document.getElementById('page-indicator');
 
-    // Verificar usuario logueado
+    // Obtener el token JWT y usuario robusto (igual que series.html)
+    const token = localStorage.getItem('jwt');
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!token) {
+      alert('No hay JWT en localStorage');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
+    }
     if (!loggedInUser || !loggedInUser.id) {
-      window.location.href = 'index.html';
+      alert('No hay usuario en localStorage');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
     }
 
     // Cerrar sesión
@@ -618,11 +629,16 @@
 
     // --- FAVORITOS API (copiado y adaptado de series.html) ---
     let favoritos = [];
-    async function fetchFavoritos() {
+    let favoritosCargados = false;
+    async function fetchFavoritos(force = false) {
       if (!loggedInUser || !loggedInUser.id) return favoritos = [];
+      if (favoritosCargados && !force) return favoritos;
       try {
-        const res = await fetch(`http://localhost:3001/favoritos_peliculas?user_id=${loggedInUser.id}`);
+        const res = await fetch(`http://localhost:3001/favoritos_peliculas?user_id=${loggedInUser.id}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
         favoritos = await res.json();
+        favoritosCargados = true;
       } catch (e) {
         favoritos = [];
       }
@@ -636,19 +652,62 @@
       if (fav) {
         await safeFetch('http://localhost:3001/favoritos_peliculas', {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ user_id: loggedInUser.id, pelicula_id: pelicula.id })
         });
         showToast(`Eliminaste "${pelicula.title}" de favoritos.`, 'success');
       } else {
         await safeFetch('http://localhost:3001/favoritos_peliculas', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ user_id: loggedInUser.id, pelicula })
         });
         showToast(`Agregaste "${pelicula.title}" a favoritos.`, 'success');
       }
-      await fetchFavoritos();
+      favoritosCargados = false;
+      await fetchFavoritos(true);
+      renderMovies();
+    }
+
+    // --- GUARDADOS API (ver más tarde) ---
+    let guardados = [];
+    let guardadosCargados = false;
+    async function fetchGuardados(force = false) {
+      if (!loggedInUser || !loggedInUser.id) return guardados = [];
+      if (guardadosCargados && !force) return guardados;
+      try {
+        const res = await fetch(`http://localhost:3001/guardados_peliculas?user_id=${loggedInUser.id}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        guardados = await res.json();
+        guardadosCargados = true;
+      } catch (e) {
+        guardados = [];
+      }
+    }
+    function estaGuardado(id) {
+      return guardados.some(g => g.id === id);
+    }
+    async function toggleGuardado(pelicula) {
+      if (!loggedInUser || !loggedInUser.id) return;
+      const guardado = guardados.find(g => g.id === pelicula.id);
+      if (guardado) {
+        await safeFetch('http://localhost:3001/guardados_peliculas', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ user_id: loggedInUser.id, pelicula_id: pelicula.id })
+        });
+        showToast(`Eliminaste "${pelicula.title}" de ver más tarde.`, 'success');
+      } else {
+        await safeFetch('http://localhost:3001/guardados_peliculas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ user_id: loggedInUser.id, pelicula })
+        });
+        showToast(`Guardaste "${pelicula.title}" para ver más tarde.`, 'success');
+      }
+      guardadosCargados = false;
+      await fetchGuardados(true);
       renderMovies();
     }
 
@@ -657,14 +716,20 @@
         peliculasContainer.innerHTML = '<p style="color:#ccc; text-align:center;">No se encontraron películas.</p>';
         return;
       }
-      await fetchFavoritos();
+      await Promise.all([fetchFavoritos(), fetchGuardados()]);
       peliculasContainer.innerHTML = peliculas.map(p => {
         const favorito = esFavorito(p.id);
+        const guardado = estaGuardado(p.id);
         return `
           <article class="card" tabindex="0" aria-label="Película: ${p.title}" data-movie-id="${p.id}">
             <button class="fav-star-btn ${favorito ? 'favorito' : ''}" aria-pressed="${favorito}" aria-label="${favorito ? 'Eliminar de favoritos' : 'Agregar a favoritos'}" data-id="${p.id}">
               <svg xmlns="http://www.w3.org/2000/svg" fill="${favorito ? '#f1c40f' : 'none'}" stroke="${favorito ? '#f1c40f' : '#eee'}" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path stroke-linejoin="round" stroke-linecap="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+            </button>
+            <button class="bookmark-btn${guardado ? ' guardado' : ''}" aria-pressed="${guardado}" aria-label="${guardado ? 'Quitar de ver más tarde' : 'Guardar para ver más tarde'}" data-id="${p.id}" tabindex="0" style="position:absolute;top:10px;left:10px;background:transparent;border:none;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${guardado ? '#00b3ff' : '#eee'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="${guardado ? '#00b3ff' : 'none'}"/>
               </svg>
             </button>
             <img src="${p.poster_path ? IMG_URL + p.poster_path : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="Poster de ${p.title}" />
@@ -676,7 +741,7 @@
         `;
       }).join('');
 
-      // Agregar eventos a botones de favoritos
+      // Botón favoritos
       document.querySelectorAll('.fav-star-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
@@ -685,17 +750,24 @@
           if (movie) toggleFavorito(movie);
         });
       });
-
-      // Evento para abrir modal al hacer click en la tarjeta (excepto el botón de favorito)
+      // Botón ver más tarde (bookmark)
+      document.querySelectorAll('.bookmark-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const movieId = parseInt(btn.getAttribute('data-id'));
+          const movie = peliculas.find(p => p.id === movieId);
+          if (movie) toggleGuardado(movie);
+        });
+      });
+      // Modal
       document.querySelectorAll('.card').forEach(card => {
         card.addEventListener('click', function(e) {
-          if (e.target.closest('.fav-star-btn')) return; // Ignorar si clic en estrella
+          if (e.target.closest('.fav-star-btn') || e.target.closest('.bookmark-btn')) return;
           const movieId = this.getAttribute('data-movie-id');
           openMovieModal(movieId);
         });
-        // Accesibilidad: abrir modal con Enter/Espacio
         card.addEventListener('keydown', function(e) {
-          if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.fav-star-btn')) {
+          if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.fav-star-btn') && !e.target.closest('.bookmark-btn')) {
             e.preventDefault();
             const movieId = this.getAttribute('data-movie-id');
             openMovieModal(movieId);
@@ -725,6 +797,8 @@
 
     // Función fetch segura para manejo de errores (igual que favoritos.html)
     async function safeFetch(url, options = {}) {
+      options.headers = options.headers || {};
+      options.headers['Authorization'] = 'Bearer ' + token;
       try {
         const res = await fetch(url, options);
         if (!res.ok) {
@@ -834,7 +908,10 @@
     }
 
     // Inicialización
-    fetchGenres().then(() => fetchMovies());
+    fetchGenres().then(async () => {
+      await Promise.all([fetchFavoritos(), fetchGuardados()]);
+      fetchMovies();
+    });
   </script>
 </body>
 </html>

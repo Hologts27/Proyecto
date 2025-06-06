@@ -171,6 +171,8 @@
         if (data.ok && data.user) {
           // Guardar usuario logeado (guardar id y username)
           localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+          // Guardar JWT SIEMPRE para rutas protegidas
+          localStorage.setItem("jwt", data.token);
           // Guardar token para admin.html si es admin
           if (data.user.role === 'admin') {
             localStorage.setItem("adminToken", data.token);

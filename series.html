@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <script>
+    // PWA: registrar service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js');
@@ -210,6 +211,38 @@
     .fav-btn.favorited {
       background-color: #00cc66; /* color verde cuando está en favoritos */
     }
+    /* Botón guardar (ver más tarde) */
+    .bookmark-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+    .bookmark-btn:active {
+      transform: scale(0.93);
+    }
+    .bookmark-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s, fill 0.3s;
+    }
+    .bookmark-btn.guardado svg {
+      stroke: #00b3ff;
+    }
+    .bookmark-btn.guardado path {
+      fill: #00b3ff;
+    }
     footer {
       background-color: #1c1c1c;
       text-align: center;
@@ -377,6 +410,43 @@
 @keyframes toastOut {
   to { opacity: 0; transform: translateY(-20px) scale(0.98); }
 }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      margin: 30px 0 0 0;
+    }
+    .pagination button {
+      background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 22px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      outline: none;
+      box-shadow: 0 2px 8px rgba(229,9,20,0.10);
+      min-width: 110px;
+      opacity: 1;
+    }
+    .pagination button:disabled {
+      background: #333;
+      color: #aaa;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .pagination span {
+      color: #e50914;
+      font-size: 1.1rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      min-width: 120px;
+      text-align: center;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -387,6 +457,7 @@
     <a href="peliculas.html">Películas</a>
     <a href="series.html" aria-current="page">Series</a>
     <a href="favoritos.html">Favoritos</a>
+    <a href="guardados.html" aria-current="page" style="background:#333;color:#eee;font-weight:bold;">Ver más tarde</a>
     <button id="logout-btn" class="btn-logout">Cerrar sesión</button>
   </nav>
 
@@ -407,6 +478,13 @@
     </select>
 
     <div id="series-container" aria-live="polite" aria-relevant="additions"></div>
+
+    <!-- Paginación -->
+    <div class="pagination">
+      <button id="prev-page" disabled>Anterior</button>
+      <span id="page-indicator">Página 1</span>
+      <button id="next-page">Siguiente</button>
+    </div>
     <!-- Modal Detalle Serie -->
     <div id="serie-modal" class="modal" style="display:none;">
       <div class="modal-content" tabindex="0">
@@ -428,162 +506,264 @@
     const BASE_URL = 'https://api.themoviedb.org/3';
     const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-    // Usuario actual (debe estar logueado)
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (!loggedInUser || !loggedInUser.id) {
-      window.location.href = 'index.html';
-    }
+// Variables de estado
+let currentPage = 1;
+let totalPages = 1;
+let currentGenre = 0;
+let currentSearchQuery = '';
+let currentSort = 'popularity.desc';
+let genres = [];
+let series = [];
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      localStorage.removeItem('loggedInUser');
-      window.location.href = 'index.html';
-    });
+// Elementos del DOM
+const genreSelect = document.getElementById('genre-select');
+const sortSelect = document.getElementById('sort-select');
+const seriesContainer = document.getElementById('series-container');
+const searchInput = document.getElementById('search-input');
+const prevPageBtn = document.getElementById('prev-page');
+const nextPageBtn = document.getElementById('next-page');
+const pageIndicator = document.getElementById('page-indicator');
 
-    // --- FAVORITOS API ---
-    let favoritos = [];
-    async function fetchFavoritos() {
-      if (!loggedInUser || !loggedInUser.id) return favoritos = [];
-      try {
-        const res = await safeFetch(`http://localhost:3001/favoritos?user_id=${loggedInUser.id}`);
-        favoritos = res;
-      } catch (e) {
-        favoritos = [];
-        showToast('Error al cargar tus favoritos.', 'error');
+// Obtener el token JWT y usuario robusto (igual que peliculas.html)
+const token = localStorage.getItem('jwt');
+const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+if (!token) {
+  alert('No hay JWT en localStorage');
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('loggedInUser');
+  window.location.href = 'login.html';
+}
+if (!loggedInUser || !loggedInUser.id) {
+  alert('No hay usuario en localStorage');
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('loggedInUser');
+  window.location.href = 'login.html';
+}
+
+// Debounce para búsqueda
+let searchTimeout;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentSearchQuery = searchInput.value.trim();
+    currentPage = 1;
+    fetchSeries();
+  }, 300);
+});
+
+// Paginación
+prevPageBtn.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    fetchSeries();
+  }
+});
+
+nextPageBtn.addEventListener('click', () => {
+  if (currentPage < totalPages) {
+    currentPage++;
+    fetchSeries();
+  }
+});
+
+// Cambio de género
+genreSelect.addEventListener('change', () => {
+  currentGenre = parseInt(genreSelect.value);
+  currentPage = 1;
+  fetchSeries();
+});
+
+// Ordenar por
+sortSelect.addEventListener('change', () => {
+  currentSort = sortSelect.value;
+  currentPage = 1;
+  fetchSeries();
+});
+
+// Cargar géneros
+async function fetchGenres() {
+  try {
+    const res = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=es-ES`);
+    const data = await res.json();
+    genres = data.genres || [];
+    populateGenreSelect();
+  } catch (e) {
+    showToast('Error cargando géneros', 'error');
+  }
+}
+
+function populateGenreSelect() {
+  genres.forEach(genre => {
+    const option = document.createElement('option');
+    option.value = genre.id;
+    option.textContent = genre.name;
+    genreSelect.appendChild(option);
+  });
+}
+
+// Cargar series
+async function fetchSeries() {
+  try {
+    let url;
+    // Si hay búsqueda, la API no soporta sort_by, así que ordenamos manualmente
+    if (currentSearchQuery) {
+      url = `${BASE_URL}/search/tv?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(currentSearchQuery)}&page=${currentPage}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      let results = data.results || [];
+      // Filtrar por género si corresponde
+      if (currentGenre && currentGenre != 0) {
+        results = results.filter(s => (s.genre_ids || []).includes(currentGenre));
       }
+      // Ordenar manualmente si corresponde
+      results = sortSearchResults(results, currentSort);
+      series = results;
+      totalPages = data.total_pages || 1;
+    } else if (currentGenre && currentGenre != 0) {
+      url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=es-ES&sort_by=${currentSort}&page=${currentPage}&with_genres=${currentGenre}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      series = data.results || [];
+      totalPages = data.total_pages || 1;
+    } else {
+      url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=es-ES&sort_by=${currentSort}&page=${currentPage}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      series = data.results || [];
+      totalPages = data.total_pages || 1;
     }
-    function esFavorito(id) {
-      return favoritos.some(fav => fav.id === id);
+    renderSeries();
+    updatePaginationControls();
+  } catch (e) {
+    showToast('Error al cargar series', 'error');
+    seriesContainer.innerHTML = '<p style="color:#e50914;text-align:center;">Error al cargar series.</p>';
+  }
+}
+
+// Ordenar manualmente resultados de búsqueda
+function sortSearchResults(results, sortBy) {
+  const [field, dir] = sortBy.split('.');
+  return results.slice().sort((a, b) => {
+    let va, vb;
+    switch (field) {
+      case 'popularity':
+        va = a.popularity; vb = b.popularity; break;
+      case 'first_air_date':
+        va = a.first_air_date || ''; vb = b.first_air_date || ''; break;
+      case 'vote_average':
+        va = a.vote_average; vb = b.vote_average; break;
+      case 'original_name':
+        va = (a.original_name || '').toLowerCase(); vb = (b.original_name || '').toLowerCase(); break;
+      default:
+        va = 0; vb = 0;
     }
-    async function toggleFavorito(serie) {
-      if (!loggedInUser || !loggedInUser.id) return;
-      const fav = favoritos.find(f => f.id === serie.id);
-      try {
-        if (fav) {
-          await safeFetch('http://localhost:3001/favoritos', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: loggedInUser.id, serie_id: serie.id })
-          });
-          showToast(`Eliminaste "${serie.name}" de favoritos.`, 'fail');
-        } else {
-          await safeFetch('http://localhost:3001/favoritos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: loggedInUser.id, serie })
-          });
-          showToast(`Agregaste "${serie.name}" a favoritos.`, 'success');
-        }
-        await fetchFavoritos();
-        renderSeries();
-      } catch (e) {
-        showToast('No se pudo actualizar favoritos.', 'error');
-      }
-    }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
 
-    const genreSelect = document.getElementById('genre-select');
-    const seriesContainer = document.getElementById('series-container');
-    const sortSelect = document.getElementById('sort-select');
-    const searchInput = document.getElementById('search-input');
-
-    let genres = [];
-    let series = [];
-    let currentSort = 'popularity.desc';
-    let currentSearchQuery = '';
-    let currentGenre = 0;
-
-    async function fetchGenres() {
-      try {
-        const res = await safeFetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=es-ES`);
-        genres = res.genres || [];
-        populateGenreSelect();
-      } catch (e) {
-        showToast('Error al cargar géneros de series.', 'error');
-      }
-    }
-
-    function populateGenreSelect() {
-      genres.forEach(genre => {
-        const option = document.createElement('option');
-        option.value = genre.id;
-        option.textContent = genre.name;
-        genreSelect.appendChild(option);
+// --- FAVORITOS API ---
+let favoritos = [];
+let favoritosCargados = false;
+async function fetchFavoritos(force = false) {
+  if (!loggedInUser || !loggedInUser.id) return favoritos = [];
+  if (favoritosCargados && !force) return favoritos;
+  try {
+    const res = await safeFetch(`http://localhost:3001/favoritos?user_id=${loggedInUser.id}`);
+    favoritos = res;
+    favoritosCargados = true;
+  } catch (e) {
+    favoritos = [];
+    showToast('Error al cargar tus favoritos.', 'error');
+  }
+}
+function esFavorito(id) {
+  return favoritos.some(fav => fav.id === id);
+}
+async function toggleFavorito(serie) {
+  if (!loggedInUser || !loggedInUser.id) return;
+  const fav = favoritos.find(f => f.id === serie.id);
+  try {
+    if (fav) {
+      await safeFetch('http://localhost:3001/favoritos', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: loggedInUser.id, serie_id: serie.id })
       });
+      showToast(`Eliminaste "${serie.name}" de favoritos.`, 'fail');
+    } else {
+      await safeFetch('http://localhost:3001/favoritos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: loggedInUser.id, serie })
+      });
+      showToast(`Agregaste "${serie.name}" a favoritos.`, 'success');
     }
+    favoritosCargados = false;
+    await fetchFavoritos(true);
+    renderSeries();
+  } catch (e) {
+    showToast('No se pudo actualizar favoritos.', 'error');
+  }
+}
 
-    // Buscar series (debounce)
-    let searchTimeout;
+// --- GUARDADOS API (ver más tarde) ---
+let guardados = [];
+let guardadosCargados = false;
+async function fetchGuardados(force = false) {
+  if (!loggedInUser || !loggedInUser.id) return guardados = [];
+  if (guardadosCargados && !force) return guardados;
+  try {
+    const res = await safeFetch(`http://localhost:3001/guardados?user_id=${loggedInUser.id}`);
+    guardados = res;
+    guardadosCargados = true;
+  } catch (e) {
+    guardados = [];
+  }
+}
+function estaGuardado(id) {
+  return guardados.some(g => g.id === id);
+}
+async function toggleGuardado(serie) {
+  if (!loggedInUser || !loggedInUser.id) return;
+  const guardado = guardados.find(g => g.id === serie.id);
+  if (guardado) {
+    await safeFetch('http://localhost:3001/guardados', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ user_id: loggedInUser.id, serie_id: serie.id })
+    });
+    showToast(`Eliminaste "${serie.name}" de ver más tarde.`, 'success');
+  } else {
+    await safeFetch('http://localhost:3001/guardados', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ user_id: loggedInUser.id, serie })
+    });
+    showToast(`Guardaste "${serie.name}" para ver más tarde.`, 'success');
+  }
+  guardadosCargados = false;
+  await fetchGuardados(true);
+  renderSeries();
+}
+
+    // Modificar los listeners de género, sort y búsqueda para reiniciar a página 1
     searchInput.addEventListener('input', () => {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         currentSearchQuery = searchInput.value.trim();
-        fetchSeries(parseInt(genreSelect.value));
+        fetchSeries(parseInt(genreSelect.value), 1);
       }, 300);
     });
-
     sortSelect.addEventListener('change', () => {
       currentSort = sortSelect.value;
-      fetchSeries(parseInt(genreSelect.value));
+      fetchSeries(parseInt(genreSelect.value), 1);
     });
-
     genreSelect.addEventListener('change', () => {
       currentGenre = parseInt(genreSelect.value);
-      fetchSeries(currentGenre);
+      fetchSeries(currentGenre, 1);
     });
-
-    async function fetchSeries(genreId = 0) {
-      try {
-        let url;
-        // Si hay búsqueda, usar search/tv (la API no soporta sort_by ni filtro de género en search)
-        if (currentSearchQuery) {
-          url = `${BASE_URL}/search/tv?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(currentSearchQuery)}`;
-          const res = await safeFetch(url);
-          let results = res.results || [];
-          // Si hay género seleccionado, filtrar manualmente
-          if (genreId && genreId != 0) {
-            results = results.filter(s => (s.genre_ids || []).includes(genreId));
-          }
-          // Ordenar manualmente
-          results = sortSearchResults(results, currentSort);
-          series = results;
-        } else if (genreId && genreId != 0) {
-          url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=es-ES&sort_by=${currentSort}&page=1&with_genres=${genreId}`;
-          const res = await safeFetch(url);
-          series = res.results || [];
-        } else {
-          url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=es-ES&sort_by=${currentSort}&page=1`;
-          const res = await safeFetch(url);
-          series = res.results || [];
-        }
-        renderSeries();
-      } catch (e) {
-        series = [];
-        showToast('Error al cargar series.', 'error');
-        renderSeries();
-      }
-    }
-
-    // Ordenar manualmente resultados de búsqueda
-    function sortSearchResults(results, sortBy) {
-      const [field, dir] = sortBy.split('.');
-      return results.slice().sort((a, b) => {
-        let va, vb;
-        switch (field) {
-          case 'popularity':
-            va = a.popularity; vb = b.popularity; break;
-          case 'first_air_date':
-            va = a.first_air_date || ''; vb = b.first_air_date || ''; break;
-          case 'vote_average':
-            va = a.vote_average; vb = b.vote_average; break;
-          case 'original_name':
-            va = (a.original_name || '').toLowerCase(); vb = (b.original_name || '').toLowerCase(); break;
-          default:
-            va = 0; vb = 0;
-        }
-        if (va < vb) return dir === 'asc' ? -1 : 1;
-        if (va > vb) return dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
 
     // Modal lógica
     const serieModal = document.getElementById('serie-modal');
@@ -681,40 +861,56 @@
         seriesContainer.innerHTML = '<p style="color:#ccc; text-align:center;">No se encontraron series.</p>';
         return;
       }
-      await fetchFavoritos();
-      seriesContainer.innerHTML = series.map(s => `
-        <article class="card" tabindex="0" aria-label="Serie: ${s.name}" data-serie-id="${s.id}">
-          <img src="${s.poster_path ? IMG_URL + s.poster_path : 'https://via.placeholder.com/500x750?text=Sin+Imagen'}" alt="Poster de ${s.name}" />
-          <div class="card-content">
-            <h3 class="card-title">${s.name}</h3>
-            <p class="card-description">${s.overview || 'Sin descripción disponible.'}</p>
-          </div>
-          <button class="fav-btn ${esFavorito(s.id) ? 'favorited' : ''}" aria-label="${esFavorito(s.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}" data-id="${s.id}">${esFavorito(s.id) ? '✔' : '☆'}</button>
-        </article>
-      `).join('');
+      await Promise.all([fetchFavoritos(), fetchGuardados()]);
+      seriesContainer.innerHTML = series.map(s => {
+        const favorito = esFavorito(s.id);
+        const guardado = estaGuardado(s.id);
+        return `
+          <article class="card" tabindex="0" aria-label="Serie: ${s.name}" data-serie-id="${s.id}">
+            <button class="fav-btn ${favorito ? 'favorited' : ''}" aria-pressed="${favorito}" aria-label="${favorito ? 'Eliminar de favoritos' : 'Agregar a favoritos'}" data-id="${s.id}">
+              ${favorito ? '✔' : '☆'}
+            </button>
+            <button class="bookmark-btn${guardado ? ' guardado' : ''}" aria-pressed="${guardado}" aria-label="${guardado ? 'Quitar de ver más tarde' : 'Guardar para ver más tarde'}" data-id="${s.id}" tabindex="0" style="position:absolute;top:10px;left:10px;background:transparent;border:none;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${guardado ? '#00b3ff' : '#eee'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="${guardado ? '#00b3ff' : 'none'}"/>
+              </svg>
+            </button>
+            <img src="${s.poster_path ? IMG_URL + s.poster_path : 'no-image.png'}" alt="Poster de ${s.name}" />
+            <div class="card-content">
+              <h3 class="card-title">${s.name}</h3>
+              <p class="card-description">${s.overview ? s.overview.slice(0, 100) + (s.overview.length > 100 ? '...' : '') : 'Sin descripción.'}</p>
+            </div>
+          </article>
+        `;
+      }).join('');
 
-      // Listener para los botones favoritos
+      // Botón favoritos
       document.querySelectorAll('.fav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const id = Number(btn.getAttribute('data-id'));
-          const serie = series.find(s => s.id === id);
-          if (serie) {
-            toggleFavorito(serie);
-          }
+          const serieId = parseInt(btn.getAttribute('data-id'));
+          const serie = series.find(s => s.id === serieId);
+          if (serie) toggleFavorito(serie);
         });
       });
-
-      // Listener para abrir modal al hacer click en la tarjeta (excepto el botón de favorito)
+      // Botón ver más tarde (bookmark)
+      document.querySelectorAll('.bookmark-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const serieId = parseInt(btn.getAttribute('data-id'));
+          const serie = series.find(s => s.id === serieId);
+          if (serie) toggleGuardado(serie);
+        });
+      });
+      // Modal
       document.querySelectorAll('.card').forEach(card => {
         card.addEventListener('click', function(e) {
-          if (e.target.closest('.fav-btn')) return; // Ignorar si clic en favorito
+          if (e.target.closest('.fav-btn') || e.target.closest('.bookmark-btn')) return;
           const serieId = this.getAttribute('data-serie-id');
           openSerieModal(serieId);
         });
-        // Accesibilidad: abrir modal con Enter/Espacio
         card.addEventListener('keydown', function(e) {
-          if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.fav-btn')) {
+          if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.fav-btn') && !e.target.closest('.bookmark-btn')) {
             e.preventDefault();
             const serieId = this.getAttribute('data-serie-id');
             openSerieModal(serieId);
@@ -722,6 +918,27 @@
         });
       });
     }
+
+function updatePaginationControls() {
+  pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+  prevPageBtn.disabled = currentPage <= 1;
+  nextPageBtn.disabled = currentPage >= totalPages;
+}
+
+    // Logout robusto (igual que peliculas.html)
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  if (token) {
+    try {
+      await fetch('http://localhost:3001/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch {}
+  }
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('loggedInUser');
+  window.location.href = 'login.html';
+});
 
     // Toast notification system
 function showToast(message, type = 'info', duration = 3500) {
@@ -736,8 +953,12 @@ function showToast(message, type = 'info', duration = 3500) {
   }, duration);
 }
 
-// Safe fetch wrapper for error handling
+// Safe fetch wrapper para rutas protegidas (igual que peliculas.html)
 async function safeFetch(url, options = {}) {
+  options.headers = options.headers || {};
+  if (url.startsWith('http://localhost:3001')) {
+    options.headers['Authorization'] = 'Bearer ' + token;
+  }
   try {
     const res = await fetch(url, options);
     if (!res.ok) {
@@ -756,7 +977,10 @@ async function safeFetch(url, options = {}) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetchGenres().then(() => fetchSeries());
+  fetchGenres().then(async () => {
+    await Promise.all([fetchFavoritos(), fetchGuardados()]);
+    fetchSeries(0, 1);
+  });
 });
   </script>
 </body>

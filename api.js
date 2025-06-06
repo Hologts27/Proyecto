@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const helmet = require('helmet');
 const JWT_SECRET = 'SIGMASIGMABOY482813271371231';
 const JWT_EXPIRA = '7d';
 // Lista negra de JWT revocados (en memoria, debe estar antes de cualquier uso)
@@ -18,6 +19,24 @@ const userTokens = new Map();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(helmet());
+
+// Content Security Policy (CSP) robusta
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Quita 'unsafe-inline' si todo tu JS es externo y seguro
+      styleSrc: ["'self'", "'unsafe-inline'"], // Quita 'unsafe-inline' si todo tu CSS es externo y seguro
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'", 'https://api.themoviedb.org'], // Agrega otros orígenes si usas APIs externas
+      fontSrc: ["'self'", 'https:', 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
 
 // Configuración de la base de datos
 const dbConfig = {
@@ -371,6 +390,90 @@ app.get('/admin/favoritos_total', authenticateToken, requireAdmin, async (req, r
     res.json({ total: (rows1[0].total || 0) + (rows2[0].total || 0) });
   } catch (e) {
     res.status(500).json({ error: 'Error al contar favoritos' });
+  } finally {
+    await conn.end();
+  }
+});
+
+// --- GUARDADOS SERIES ---
+// Obtener guardados de series
+app.get('/guardados', authenticateToken, async (req, res) => {
+  const user_id = req.query.user_id;
+  if (!user_id) return res.status(400).json({ error: 'Falta el user_id' });
+  const conn = await mysql.createConnection(dbConfig);
+  const [rows] = await conn.execute('SELECT serie_json FROM guardados WHERE user_id = ?', [user_id]);
+  await conn.end();
+  res.json(rows.map(r => JSON.parse(r.serie_json)));
+});
+// Agregar guardado de serie
+app.post('/guardados', authenticateToken, async (req, res) => {
+  const { user_id, serie } = req.body;
+  if (!user_id || !serie || !serie.id) return res.status(400).json({ error: 'Datos incompletos' });
+  const conn = await mysql.createConnection(dbConfig);
+  try {
+    await conn.execute(
+      'INSERT IGNORE INTO guardados (user_id, serie_id, serie_json) VALUES (?, ?, ?)',
+      [user_id, serie.id, JSON.stringify(serie)]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al guardar serie' });
+  } finally {
+    await conn.end();
+  }
+});
+// Eliminar guardado de serie
+app.delete('/guardados', authenticateToken, async (req, res) => {
+  const { user_id, serie_id } = req.body;
+  if (!user_id || !serie_id) return res.status(400).json({ error: 'Datos incompletos' });
+  const conn = await mysql.createConnection(dbConfig);
+  try {
+    await conn.execute('DELETE FROM guardados WHERE user_id = ? AND serie_id = ?', [user_id, serie_id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al eliminar guardado' });
+  } finally {
+    await conn.end();
+  }
+});
+
+// --- GUARDADOS PELICULAS ---
+// Obtener guardados de películas
+app.get('/guardados_peliculas', authenticateToken, async (req, res) => {
+  const user_id = req.query.user_id;
+  if (!user_id) return res.status(400).json({ error: 'Falta el user_id' });
+  const conn = await mysql.createConnection(dbConfig);
+  const [rows] = await conn.execute('SELECT pelicula_json FROM guardados_peliculas WHERE user_id = ?', [user_id]);
+  await conn.end();
+  res.json(rows.map(r => JSON.parse(r.pelicula_json)));
+});
+// Agregar guardado de película
+app.post('/guardados_peliculas', authenticateToken, async (req, res) => {
+  const { user_id, pelicula } = req.body;
+  if (!user_id || !pelicula || !pelicula.id) return res.status(400).json({ error: 'Datos incompletos' });
+  const conn = await mysql.createConnection(dbConfig);
+  try {
+    await conn.execute(
+      'INSERT IGNORE INTO guardados_peliculas (user_id, pelicula_id, pelicula_json) VALUES (?, ?, ?)',
+      [user_id, pelicula.id, JSON.stringify(pelicula)]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al guardar película' });
+  } finally {
+    await conn.end();
+  }
+});
+// Eliminar guardado de película
+app.delete('/guardados_peliculas', authenticateToken, async (req, res) => {
+  const { user_id, pelicula_id } = req.body;
+  if (!user_id || !pelicula_id) return res.status(400).json({ error: 'Datos incompletos' });
+  const conn = await mysql.createConnection(dbConfig);
+  try {
+    await conn.execute('DELETE FROM guardados_peliculas WHERE user_id = ? AND pelicula_id = ?', [user_id, pelicula_id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al eliminar guardado' });
   } finally {
     await conn.end();
   }

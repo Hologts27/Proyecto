@@ -220,6 +220,7 @@
     <a href="peliculas.html">Películas</a>
     <a href="series.html">Series</a>
     <a href="favoritos.html" aria-current="page">Favoritos</a>
+    <a href="guardados.html" aria-current="page" style="background:#333;color:#eee;font-weight:bold;">Ver más tarde</a>
     <button id="logout-btn" class="btn-logout">Cerrar sesión</button>
   </nav>
 
@@ -233,9 +234,20 @@
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
+    // Obtener el token JWT y usuario robusto (igual que peliculas.html y series.html)
+    const token = localStorage.getItem('jwt');
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!token) {
+      alert('No hay JWT en localStorage');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
+    }
     if (!loggedInUser || !loggedInUser.id) {
-      window.location.href = 'index.html';
+      alert('No hay usuario en localStorage');
+      localStorage.removeItem('jwt');
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
     }
 
     document.getElementById('logout-btn').addEventListener('click', () => {
@@ -282,13 +294,17 @@ async function loadFavoritos() {
   let favoritosSeries = [];
   let favoritosPeliculas = [];
   try {
-    const resSeries = await fetch(`http://localhost:3001/favoritos?user_id=${loggedInUser.id}`);
+    const resSeries = await fetch(`http://localhost:3001/favoritos?user_id=${loggedInUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
     favoritosSeries = await resSeries.json();
   } catch (e) {
     favoritosSeries = [];
   }
   try {
-    const resPeliculas = await fetch(`http://localhost:3001/favoritos_peliculas?user_id=${loggedInUser.id}`);
+    const resPeliculas = await fetch(`http://localhost:3001/favoritos_peliculas?user_id=${loggedInUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
     favoritosPeliculas = await resPeliculas.json();
   } catch (e) {
     favoritosPeliculas = [];
@@ -342,13 +358,13 @@ async function quitarFavorito(itemId, tipo) {
   if (tipo === 'serie') {
     await safeFetch('http://localhost:3001/favoritos', {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ user_id: loggedInUser.id, serie_id: Number(itemId) })
     });
   } else {
     await safeFetch('http://localhost:3001/favoritos_peliculas', {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ user_id: loggedInUser.id, pelicula_id: Number(itemId) })
     });
   }
