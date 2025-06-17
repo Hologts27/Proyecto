@@ -105,8 +105,205 @@
   }
   
   /* Responsive ajustes */
+
+/* Page Structure & Common Elements for Media Pages */
+.page-subheader {
+  background-color: var(--secondary-bg); /* Assuming --secondary-bg is defined in :root */
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color); /* Assuming --border-color is defined */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  margin-bottom: 1.5rem;
+}
+.page-subheader .page-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* .page-container class should handle max-width and padding */
+}
+.page-subheader h1 {
+  color: var(--accent-color); /* Assuming --accent-color is defined */
+  margin-bottom: 0;
+  font-size: 1.8rem;
+}
+.page-subheader nav .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Filters Toolbar Styling */
+.filters-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem;
+    background-color: var(--card-bg); /* Assuming --card-bg is defined */
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+.filters-toolbar input[type="text"],
+.filters-toolbar select {
+    flex-grow: 1;
+    min-width: 200px;
+    margin-bottom: 0;
+    /* Inputs/selects should pick up global form styling from :root an general input tags */
+}
+
+/* Pagination Styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0;
+  gap: 0.75rem;
+}
+.pagination .page-indicator {
+    padding: 0.6rem 1.2rem;
+    background-color: var(--input-bg); /* Assuming --input-bg is defined */
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text); /* Assuming --primary-text is defined */
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+/* Pagination buttons will use global .btn styling */
+
+/* Media Grid and Card Styling */
+.media-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  /* Padding should be on .page-container that wraps this grid */
+}
+
+.media-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.media-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+
+.media-card-poster {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.media-card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.media-card-title {
+  font-size: 1.1rem;
+  color: var(--heading-text); /* Assuming --heading-text is defined */
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.5em;
+}
+
+.media-card-info {
+  font-size: 0.85rem;
+  color: var(--muted-text); /* Assuming --muted-text is defined */
+  margin-bottom: 0.75rem;
+  /* flex-grow: 1; /* Removed to allow overview to push it up */
+}
+
+.media-card-overview {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  margin-bottom: 0.75rem;
+  flex-grow: 1; /* This will take available space and push actions down */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Adjust number of lines as needed */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.9em; /* Approx 3 lines height (0.85rem * 1.6 line-height * 3) */
+}
+
+.media-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.media-card-actions .btn {
+  flex: 1 1 auto;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.8rem;
+}
+.media-card-actions .btn.btn-favorite.active-favorite,
+.media-card-actions .btn.btn-save.active-save {
+    background-color: var(--accent-hover); /* Assuming --accent-hover is defined */
+    color: var(--button-text-color); /* Assuming --button-text-color is defined */
+}
+.media-card-actions .btn svg {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+    fill: currentColor; /* SVG color to match button text color */
+}
+.media-card-actions .btn.btn-favorite.active-favorite svg {
+    fill: gold; /* Example: gold star for active favorite */
+}
+.media-card-actions .btn.btn-save.active-save svg {
+    /* Example: a specific color for active save, or just rely on button background change */
+}
+
+
+  @media (max-width: 768px) { /* For tablets */
+    .media-grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    .media-card-title {
+        font-size: 1.05rem;
+        min-height: 2.4em;
+    }
+    .media-card-info {
+        font-size: 0.8rem;
+    }
+    .media-card-actions .btn {
+        font-size: 0.75rem;
+    }
+     .page-subheader h1 {
+        font-size: 1.6rem;
+    }
+    .filters-toolbar {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    .filters-toolbar input[type="text"],
+    .filters-toolbar select {
+        min-width: 150px;
+    }
+  }
+
   @media (max-width: 600px) {
-    .card img {
+    .card img { /* This is an old class, .media-card-poster is the new one */
       height: 250px;
     }
   

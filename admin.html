@@ -4,305 +4,514 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Panel de Administración</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="var(--primary-bg)">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <style>
-    body { background: #181818; color: #eee; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
-    header { background: #1c1c1c; color: #e50914; font-size: 2rem; padding: 20px; text-align: center; }
-    main { max-width: 900px; margin: 30px auto; background: #232323; border-radius: 10px; padding: 30px; box-shadow: 0 0 20px #000a; }
-    h2 { color: #43e97b; margin-top: 0; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    th, td { padding: 10px; border-bottom: 1px solid #333; text-align: left; }
-    th { color: #e50914; }
-    tr:last-child td { border-bottom: none; }
-    .btn { background: #e50914; color: #fff; border: none; border-radius: 5px; padding: 7px 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    .btn:hover { background: #b20710; }
-    .btn-danger { background: #b20710; color: #fff; }
-    .btn-danger:hover { background: #e50914; }
-    .role-select { background: #232323; color: #eee; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; }
-    .toast { position: fixed; top: 30px; right: 30px; background: #232323; color: #fff; padding: 16px 24px; border-radius: 8px; font-size: 1rem; box-shadow: 0 2px 12px #e5091429; opacity: 0.97; z-index: 9999; }
-    .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
-    .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
-    pre { background: #111; color: #43e97b; padding: 15px; border-radius: 8px; overflow-x: auto; }
-    .modal-fade {
+    /* Admin page specific styles */
+    body.admin-page-body {
+      padding-bottom: 60px; /* Ensure footer doesn't overlap content */
+    }
+
+    .admin-section-card {
+      background-color: var(--card-bg);
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .admin-section-card h2 {
+      color: var(--accent-color);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.6rem;
+    }
+    .admin-section-card h3 {
+        color: var(--heading-text);
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.3rem;
+    }
+
+    /* Table Styling */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    .admin-table th,
+    .admin-table td {
+      padding: 0.8rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .admin-table th {
+      background-color: var(--input-bg);
+      color: var(--heading-text);
+      font-weight: 600;
+    }
+    .admin-table tbody tr:nth-child(even) {
+      background-color: rgba(0,0,0,0.05); /* Subtle stripe for dark theme */
+    }
+    .admin-table .btn { /* Smaller buttons in table cells */
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      margin-right: 0.5rem;
+    }
+    .admin-table .btn:last-child {
+      margin-right: 0;
+    }
+    .admin-table select.role-select { /* Ensure select within table inherits form styles */
+        padding: 0.4rem 0.6rem; /* Adjust padding to fit well in table */
+        font-size: 0.9rem;
+        /* width will be auto or specific small width */
+        width: auto;
+        min-width: 100px;
+    }
+    .admin-table td .action-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+
+    /* Log Display */
+    pre#logs-display {
+      background-color: var(--input-bg);
+      color: var(--primary-text);
+      padding: 1rem;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      margin-top: 1rem;
+    }
+
+    /* Modal Styling (ensure it uses variables) */
+    .modal-backdrop { /* Renamed from modal-reset-bg for clarity */
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 10000;
+      display: none; /* Hidden by default */
+      align-items: center;
+      justify-content: center;
       opacity: 0;
-      transform: scale(0.98) translateY(30px);
-      transition: opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1);
-      pointer-events: none;
+      transition: opacity 0.3s ease-in-out;
     }
-    .modal-fade.active {
+    .modal-backdrop.active {
+      display: flex;
       opacity: 1;
-      transform: scale(1) translateY(0);
-      pointer-events: auto;
     }
-    .btn-anim {
-      transition: background 0.2s, transform 0.18s cubic-bezier(.4,0,.2,1);
+    .modal-dialog { /* Renamed from modal-reset-content */
+      background-color: var(--card-bg);
+      padding: 2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+      min-width: 320px;
+      max-width: 90%;
+      width: 400px; /* Specific width for this modal */
+      transform: scale(0.95);
+      transition: transform 0.3s ease-in-out;
     }
-    .btn-anim:active {
-      transform: scale(0.96);
+    .modal-backdrop.active .modal-dialog {
+        transform: scale(1);
     }
-    .fade-in {
-      animation: fadeIn 0.4s cubic-bezier(.4,0,.2,1);
+    .modal-dialog h3 {
+      color: var(--accent-color);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      text-align: center;
     }
-    .fade-out {
-      animation: fadeOut 0.3s cubic-bezier(.4,0,.2,1) forwards;
+    .modal-dialog .form-group { /* Spacing for modal form elements */
+        margin-bottom: 1rem;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.98) translateY(30px); }
-      to { opacity: 1; transform: none; }
+    .modal-dialog .form-group input {
+        margin-bottom: 0; /* Remove default input margin if label is on top */
     }
-    @keyframes fadeOut {
-      from { opacity: 1; transform: none; }
-      to { opacity: 0; transform: scale(0.98) translateY(30px); }
+    .modal-dialog .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
     }
+    .modal-dialog .modal-actions .btn {
+        padding: 0.6rem 1.2rem;
+    }
+    #reset-pass-msg { /* Error message inside modal */
+        color: var(--accent-color);
+        margin-top: 1rem;
+        text-align: center;
+        min-height: 1.2em;
+    }
+
+    /* Status Message Area */
+    #adminStatusMessage {
+        padding: 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-weight: 500;
+    }
+    #adminStatusMessage.success {
+        background-color: rgba(var(--toast-success-rgb, 39, 174, 96), 0.15); /* Define --toast-success-rgb */
+        color: var(--toast-success-bg);
+        border: 1px solid rgba(var(--toast-success-rgb, 39, 174, 96), 0.3);
+    }
+    #adminStatusMessage.error {
+        background-color: rgba(var(--accent-rgb), 0.1);
+        color: var(--accent-color);
+        border: 1px solid rgba(var(--accent-rgb), 0.3);
+    }
+    #adminStatusMessage:empty {
+        display: none;
+    }
+
   </style>
 </head>
-<body>
-  <header>Panel de Administración</header>
-  <main>
-    <h2>Usuarios</h2>
-    <table id="usuarios-table">
-      <thead>
-        <tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Acción</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<body class="admin-page-body">
+
+  <header class="page-subheader">
+    <div class="page-container">
+      <h1>Panel de Administración</h1>
+      <nav>
+        <a href="dash.html" class="btn btn-secondary">Volver al Hub</a>
+        <button id="admin-logout-btn" class="btn btn-secondary" style="margin-left: 0.5rem;">Cerrar Sesión Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <div id="adminStatusMessage" role="alert"></div>
+
+    <section class="admin-section-card">
+      <h2>Gestión de Usuarios</h2>
+      <table class="admin-table" id="usuarios-table">
+        <thead>
+          <tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
+        </thead>
+        <tbody><!-- Contenido llenado por JS --></tbody>
+      </table>
+    </section>
 
     <!-- Modal para resetear contraseña -->
-    <div id="modal-reset-bg" class="modal-fade" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000a;z-index:10000;align-items:center;justify-content:center;">
-      <div id="modal-reset-content" style="background:#232323;padding:30px 24px;border-radius:10px;min-width:320px;max-width:90vw;box-shadow:0 0 20px #000a;">
-        <h3 style="color:#e50914;margin-top:0;">Resetear contraseña</h3>
-        <div style="margin-bottom:12px;">
-          <input id="reset-pass-input" type="password" placeholder="Nueva contraseña" style="width:100%;padding:8px 10px;border-radius:5px;border:1px solid #444;background:#181818;color:#eee;" />
+    <div id="modal-reset-backdrop" class="modal-backdrop">
+      <div class="modal-dialog" id="modal-reset-dialog">
+        <h3>Resetear Contraseña</h3>
+        <div class="form-group">
+            <label for="reset-pass-input">Nueva Contraseña:</label>
+            <input id="reset-pass-input" type="password" placeholder="Mín. 8 caracteres, mayús, núm, símb." />
         </div>
-        <div style="margin-bottom:12px;">
-          <input id="reset-pass-confirm" type="password" placeholder="Confirmar contraseña" style="width:100%;padding:8px 10px;border-radius:5px;border:1px solid #444;background:#181818;color:#eee;" />
+        <div class="form-group">
+            <label for="reset-pass-confirm">Confirmar Nueva Contraseña:</label>
+            <input id="reset-pass-confirm" type="password" placeholder="Repetir nueva contraseña" />
         </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;">
-          <button class="btn btn-anim" id="reset-pass-cancel">Cancelar</button>
-          <button class="btn btn-anim" id="reset-pass-confirm-btn">Resetear</button>
+        <div id="reset-pass-msg"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="reset-pass-cancel-btn">Cancelar</button>
+          <button class="btn btn-primary" id="reset-pass-confirm-btn">Resetear</button>
         </div>
-        <div id="reset-pass-msg" style="color:#e50914;margin-top:10px;"></div>
       </div>
     </div>
 
-    <h2>Logs de Acceso</h2>
-    <button class="btn" id="ver-logs-btn">Ver logs</button>
-    <button class="btn" id="descargar-logs-btn">Descargar logs</button>
-    <button class="btn btn-danger" id="limpiar-logs-btn">Limpiar logs</button>
-    <pre id="logs" style="display:none;"></pre>
+    <section class="admin-section-card">
+      <h2>Gestión de Logs de Acceso</h2>
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <button class="btn" id="ver-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">visibility</i> Ver Logs</button>
+        <button class="btn" id="descargar-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">download</i> Descargar Logs</button>
+        <button class="btn btn-danger" id="limpiar-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">delete_sweep</i> Limpiar Logs</button>
+      </div>
+      <pre id="logs-display" style="display:none;"></pre>
+    </section>
+
+    <section class="admin-section-card">
+        <h2>Estadísticas del Dashboard</h2>
+        <div id="dashboard-stats">
+            <p>Cargando estadísticas...</p>
+        </div>
+    </section>
+
   </main>
-  <div id="toast-container"></div>
+
+  <footer class="page-footer">
+    <div class="page-container">
+        <p>© 2024 Catálogo App Admin. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Toast container is available globally from style.css, no need for a separate one here unless specifically desired -->
+  <!-- <div id="toast-container"></div> -->
+
   <script>
-    // Protección admin
     const adminToken = localStorage.getItem('adminToken');
     let adminRole = null;
+
     if (adminToken) {
       try {
-        // Decodifica el JWT para obtener el rol
         const payload = JSON.parse(atob(adminToken.split('.')[1]));
         adminRole = payload.role;
-      } catch {}
+      } catch(e) {
+        console.error("Error decoding admin token:", e);
+        adminRole = null; // Ensure adminRole is null if token is invalid
+      }
     }
-    if (!adminToken || adminRole !== 'admin') {
-      alert('Acceso solo para administradores.');
+
+    if (adminRole !== 'admin') {
+      alert('Acceso denegado. Esta área es solo para administradores.');
       window.location.href = 'index.html';
     }
-    // Función para cerrar sesión (logout)
-    function logout() {
-      fetch('http://localhost:3001/logout', {
+
+    const adminStatusMessage = document.getElementById('adminStatusMessage');
+
+    function showAdminMessage(message, type = 'info') {
+        if (adminStatusMessage) {
+            adminStatusMessage.textContent = message;
+            adminStatusMessage.className = type; // 'success' or 'error'
+            adminStatusMessage.style.display = 'block';
+            setTimeout(() => {
+                adminStatusMessage.style.display = 'none';
+                adminStatusMessage.textContent = '';
+                adminStatusMessage.className = '';
+            }, 5000); // Hide after 5 seconds
+        }
+    }
+
+
+    function logoutAdmin() {
+      fetch('http://localhost:3001/logout', { // Assuming same logout endpoint invalidates any JWT
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + adminToken }
       }).finally(() => {
         localStorage.removeItem('adminToken');
+        localStorage.removeItem('loggedInUser'); // Also clear regular user session
+        localStorage.removeItem('jwt');
         window.location.href = 'index.html';
       });
     }
-    function showToast(msg, type = 'info', duration = 3500) {
-      const t = document.createElement('div');
-      t.className = 'toast toast-' + type;
-      t.textContent = msg;
-      document.getElementById('toast-container').appendChild(t);
-      setTimeout(() => t.remove(), duration);
+    document.getElementById('admin-logout-btn').addEventListener('click', logoutAdmin);
+
+    async function fetchWithAuth(url, options = {}) {
+        options.headers = { ...options.headers, 'Authorization': `Bearer ${adminToken}` };
+        if (options.body && typeof options.body === 'object') { // Ensure body is stringified if it's an object
+             options.headers['Content-Type'] = 'application/json';
+             options.body = JSON.stringify(options.body);
+        }
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: `HTTP error ${response.status}` }));
+            throw new Error(errorData.error || `Error ${response.status}`);
+        }
+        // For DELETE or other methods that might not return JSON
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            return response.json();
+        } else {
+            return response.text(); // Or handle as appropriate
+        }
     }
+
     async function cargarUsuarios() {
-      const res = await fetch('http://localhost:3001/admin/usuarios', { headers: { Authorization: 'Bearer ' + adminToken } });
-      if (!res.ok) return showToast('Error cargando usuarios', 'error');
-      const usuarios = await res.json();
-      const tbody = document.querySelector('#usuarios-table tbody');
-      tbody.innerHTML = '';
-      usuarios.forEach(u => {
-        const tr = document.createElement('tr');
-        tr.className = 'fade-in';
-        tr.innerHTML = `
-          <td>${u.id}</td>
-          <td>${u.username}</td>
-          <td>${u.email}</td>
-          <td>
-            <select class="role-select" data-id="${u.id}" value="${u.role}">
-              <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
-              <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>admin</option>
-            </select>
-          </td>
-          <td style="display:flex;gap:6px;">
-            <button class="btn btn-anim" onclick="cambiarRol(${u.id}, this)">Actualizar</button>
-            <button class="btn btn-anim" style="background:#444;" onclick="abrirResetModal(${u.id}, '${u.username}')">Resetear contraseña</button>
-            <button class="btn btn-danger btn-anim" onclick="eliminarUsuario(${u.id}, this)">Eliminar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      try {
+        const usuarios = await fetchWithAuth('http://localhost:3001/admin/usuarios');
+        const tbody = document.querySelector('#usuarios-table tbody');
+        tbody.innerHTML = '';
+        usuarios.forEach(u => {
+          const tr = document.createElement('tr');
+          // Removed fade-in for simplicity, can be added back via CSS if desired
+          tr.innerHTML = `
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+            <td>
+              <select class="role-select" data-id="${u.id}">
+                <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuario</option>
+                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn btn-primary" onclick="cambiarRol(${u.id}, this)">Actualizar Rol</button>
+                <button class="btn" onclick="abrirResetModal(${u.id}, '${u.username}')">Reset Pass</button>
+                <button class="btn btn-danger" onclick="eliminarUsuario(${u.id}, this)">Eliminar</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch(error) {
+        showAdminMessage(`Error cargando usuarios: ${error.message}`, 'error');
+      }
     }
+
     async function cambiarRol(userId, btn) {
       const select = document.querySelector(`select[data-id='${userId}']`);
       const nuevoRol = select.value;
       btn.disabled = true;
-      const res = await fetch('http://localhost:3001/admin/cambiar_rol', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminToken },
-        body: JSON.stringify({ user_id: userId, role: nuevoRol })
-      });
-      if (res.ok) {
-        showToast('Rol actualizado', 'success');
-        cargarUsuarios();
-      } else {
-        showToast('Error al actualizar rol', 'error');
-      }
-      btn.disabled = false;
-    }
-    async function cargarLogs() {
-      const pre = document.getElementById('logs');
-      pre.style.display = 'block';
-      pre.textContent = 'Cargando...';
-      const res = await fetch('http://localhost:3001/admin/logs', { headers: { Authorization: 'Bearer ' + adminToken } });
-      if (!res.ok) return showToast('Error cargando logs', 'error');
-      pre.textContent = await res.text();
-    }
-    document.getElementById('ver-logs-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      cargarLogs();
-    });
-    document.getElementById('descargar-logs-btn').addEventListener('click', async function() {
-      const res = await fetch('http://localhost:3001/admin/logs', { headers: { Authorization: 'Bearer ' + adminToken } });
-      if (!res.ok) return showToast('Error descargando logs', 'error');
-      const blob = new Blob([await res.text()], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'access.log';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-    document.getElementById('limpiar-logs-btn').addEventListener('click', async function() {
-      if (!confirm('¿Seguro que deseas limpiar los logs?')) return;
-      const res = await fetch('http://localhost:3001/admin/limpiar_logs', { method: 'POST', headers: { Authorization: 'Bearer ' + adminToken } });
-      if (res.ok) {
-        showToast('Logs limpiados', 'success');
-        document.getElementById('logs').textContent = '';
-      } else {
-        showToast('Error al limpiar logs', 'error');
-      }
-    });
-    // Modal reset contraseña
-    let resetUserId = null;
-    function abrirResetModal(userId, username) {
-      resetUserId = userId;
-      document.getElementById('reset-pass-input').value = '';
-      document.getElementById('reset-pass-confirm').value = '';
-      document.getElementById('reset-pass-msg').textContent = '';
-      const modalBg = document.getElementById('modal-reset-bg');
-      const modalContent = document.getElementById('modal-reset-content');
-      modalBg.style.display = 'flex';
-      setTimeout(() => modalBg.classList.add('active'), 10);
-      modalContent.classList.remove('fade-out');
-      modalContent.classList.add('fade-in');
-    }
-    document.getElementById('reset-pass-cancel').onclick = function() {
-      const modalBg = document.getElementById('modal-reset-bg');
-      const modalContent = document.getElementById('modal-reset-content');
-      modalContent.classList.remove('fade-in');
-      modalContent.classList.add('fade-out');
-      setTimeout(() => {
-        modalBg.classList.remove('active');
-        modalBg.style.display = 'none';
-      }, 300);
-    };
-    document.getElementById('reset-pass-confirm-btn').onclick = async function() {
-      const pass = document.getElementById('reset-pass-input').value;
-      const pass2 = document.getElementById('reset-pass-confirm').value;
-      const msg = document.getElementById('reset-pass-msg');
-      msg.textContent = '';
-      if (!pass || !pass2) {
-        msg.textContent = 'Completa ambos campos.';
-        return;
-      }
-      if (pass !== pass2) {
-        msg.textContent = 'Las contraseñas no coinciden.';
-        return;
-      }
-      if (!validarSeguridad(pass)) {
-        msg.textContent = 'Mínimo 8 caracteres, una mayúscula, un número y un símbolo.';
-        return;
-      }
       try {
-        const res = await fetch('http://localhost:3001/admin/reset_password', {
+        await fetchWithAuth('http://localhost:3001/admin/cambiar_rol', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminToken },
-          body: JSON.stringify({ user_id: resetUserId, new_password: pass })
+          body: { user_id: userId, role: nuevoRol }
         });
-        if (res.ok) {
-          showToast('Contraseña reseteada', 'success');
-          document.getElementById('modal-reset-bg').style.display = 'none';
-        } else {
-          const data = await res.json();
-          msg.textContent = data.error || 'Error al resetear contraseña.';
-        }
-      } catch {
-        msg.textContent = 'Error de conexión.';
+        showAdminMessage('Rol actualizado correctamente.', 'success');
+        cargarUsuarios(); // Refresh list
+      } catch (error) {
+        showAdminMessage(`Error al actualizar rol: ${error.message}`, 'error');
+      } finally {
+        btn.disabled = false;
       }
-    };
-    function validarSeguridad(contra) {
-      const minLargo = contra.length >= 8;
-      const mayus = /[A-Z]/.test(contra);
-      const numero = /[0-9]/.test(contra);
-      const simbolo = /[^A-Za-z0-9]/.test(contra);
-      return minLargo && mayus && numero && simbolo;
     }
+
     async function eliminarUsuario(userId, btn) {
-      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+      if (!confirm('¿Seguro que deseas eliminar este usuario? Esta acción es irreversible.')) return;
       btn.disabled = true;
       const tr = btn.closest('tr');
-      tr.classList.add('fade-out');
-      setTimeout(async () => {
-        const res = await fetch('http://localhost:3001/admin/eliminar_usuario', {
+      try {
+        await fetchWithAuth('http://localhost:3001/admin/eliminar_usuario', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminToken },
-          body: JSON.stringify({ user_id: userId })
+          body: { user_id: userId }
         });
-        if (res.ok) {
-          showToast('Usuario eliminado', 'success');
-          tr.remove();
-        } else {
-          showToast('Error al eliminar usuario', 'error');
-          tr.classList.remove('fade-out');
-        }
+        showAdminMessage('Usuario eliminado.', 'success');
+        if(tr) tr.remove(); // Optimistic UI update
+      } catch (error) {
+        showAdminMessage(`Error al eliminar usuario: ${error.message}`, 'error');
+      } finally {
         btn.disabled = false;
-      }, 250);
+      }
     }
-    cargarUsuarios();
 
-    // PWA: registrar service worker y link manifest
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
+    // Log Management
+    const logsDisplay = document.getElementById('logs-display');
+    document.getElementById('ver-logs-btn').addEventListener('click', async () => {
+        try {
+            const logData = await fetchWithAuth('http://localhost:3001/admin/logs');
+            logsDisplay.textContent = logData;
+            logsDisplay.style.display = 'block';
+            showAdminMessage('Logs cargados.', 'success');
+        } catch (error) {
+            showAdminMessage(`Error cargando logs: ${error.message}`, 'error');
+        }
+    });
+
+    document.getElementById('descargar-logs-btn').addEventListener('click', async () => {
+        try {
+            const logData = await fetchWithAuth('http://localhost:3001/admin/logs');
+            const blob = new Blob([logData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'access.log';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            showAdminMessage(`Error descargando logs: ${error.message}`, 'error');
+        }
+    });
+
+    document.getElementById('limpiar-logs-btn').addEventListener('click', async () => {
+      if (!confirm('¿Seguro que deseas limpiar los logs? Esta acción es irreversible.')) return;
+      try {
+        await fetchWithAuth('http://localhost:3001/admin/limpiar_logs', { method: 'POST' });
+        logsDisplay.textContent = '';
+        showAdminMessage('Logs limpiados.', 'success');
+      } catch (error) {
+        showAdminMessage(`Error al limpiar logs: ${error.message}`, 'error');
+      }
+    });
+
+    // Password Reset Modal
+    const modalBackdrop = document.getElementById('modal-reset-backdrop');
+    const resetPassInput = document.getElementById('reset-pass-input');
+    const resetPassConfirmInput = document.getElementById('reset-pass-confirm');
+    const resetPassMsg = document.getElementById('reset-pass-msg');
+    let currentResetUserId = null;
+
+    function abrirResetModal(userId, username) {
+      currentResetUserId = userId;
+      resetPassInput.value = '';
+      resetPassConfirmInput.value = '';
+      resetPassMsg.textContent = `Reseteando contraseña para: ${username}`;
+      modalBackdrop.classList.add('active');
     }
-    if (!document.querySelector('link[rel="manifest"]')) {
-      const link = document.createElement('link');
-      link.rel = 'manifest';
-      link.href = 'manifest.json';
-      document.head.appendChild(link);
+
+    document.getElementById('reset-pass-cancel-btn').addEventListener('click', () => {
+      modalBackdrop.classList.remove('active');
+    });
+
+    modalBackdrop.addEventListener('click', (event) => { // Close on backdrop click
+        if (event.target === modalBackdrop) {
+            modalBackdrop.classList.remove('active');
+        }
+    });
+
+    document.getElementById('reset-pass-confirm-btn').addEventListener('click', async function() {
+      const newPassword = resetPassInput.value;
+      const confirmPassword = resetPassConfirmInput.value;
+
+      if (!newPassword || !confirmPassword) {
+        resetPassMsg.textContent = 'Ambos campos de contraseña son requeridos.';
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        resetPassMsg.textContent = 'Las contraseñas no coinciden.';
+        return;
+      }
+      if (!validarSeguridad(newPassword)) {
+        resetPassMsg.textContent = 'Mín. 8 caracteres, una mayúscula, un número y un símbolo.';
+        return;
+      }
+
+      this.disabled = true;
+      try {
+        await fetchWithAuth('http://localhost:3001/admin/reset_password', {
+          method: 'POST',
+          body: { user_id: currentResetUserId, new_password: newPassword }
+        });
+        showAdminMessage('Contraseña reseteada exitosamente.', 'success');
+        modalBackdrop.classList.remove('active');
+      } catch (error) {
+        resetPassMsg.textContent = `Error: ${error.message}`;
+        showAdminMessage(`Error al resetear contraseña: ${error.message}`, 'error');
+      } finally {
+        this.disabled = false;
+      }
+    });
+
+    function validarSeguridad(password) {
+      return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
     }
+
+    // Dashboard Stats
+    async function loadDashboardStats() {
+        const statsContainer = document.getElementById('dashboard-stats');
+        try {
+            const stats = await fetchWithAuth('http://localhost:3001/admin/favoritos_total'); // Example stat
+            statsContainer.innerHTML = `<p>Total de Favoritos (Películas + Series): <strong>${stats.total !== undefined ? stats.total : 'N/A'}</strong></p>`;
+            // Add more stats here if available
+        } catch (error) {
+            statsContainer.innerHTML = `<p style="color: var(--accent-color);">Error cargando estadísticas: ${error.message}</p>`;
+        }
+    }
+
+    // Initial data load
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarUsuarios();
+        loadDashboardStats();
+        // PWA manifest link (already in original script, kept for completeness if needed)
+        if (!document.querySelector('link[rel="manifest"]')) {
+          const link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = 'manifest.json'; // Ensure manifest.json is correctly configured
+          document.head.appendChild(link);
+        }
+    });
   </script>
 </body>
 </html>
