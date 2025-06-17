@@ -3,369 +3,268 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestionar Cuenta</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Gestionar Cuenta | Catálogo App</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#181818"> <!-- Hardcoded theme color -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    /* Targeted inline styles for manage.html specific structure */
+    body.page-body-flex-center { /* To center the card on the page */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Align card to top, header will push down */
+        min-height: 100vh;
+        padding-top: 2rem; /* Space from top if header wasn't fixed */
+        padding-bottom: 2rem; /* Space for footer */
+    }
+    .manage-account-card {
+      background-color: var(--card-bg);
+      padding: var(--card-padding-y) var(--card-padding-x);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 550px; /* Max width for the form card */
+      margin-top: 1rem; /* Space below subheader if not using full page-container for main */
+    }
+    .manage-account-card h2 { /* Specific heading for sections within this card */
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .form-section:last-of-type {
+        margin-bottom: 1rem;
+    }
+    /* Inputs, labels, buttons will use global styles from style.css */
+    /* .status-message styling is global in style.css */
+     .modal-backdrop {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+    }
+    .modal-dialog {
+      background-color: var(--card-bg);
+      padding: var(--card-padding-y) var(--card-padding-x);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+      min-width: 320px;
+      max-width: 90%;
+      width: 400px;
+      transform: scale(0.95);
+      transition: transform 0.3s ease-in-out;
+    }
+    .modal-backdrop.active .modal-dialog {
+        transform: scale(1);
+    }
+    .modal-dialog h3 {
+      color: var(--accent-color);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    .modal-dialog .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+  </style>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('SW reg failed: ', err));
       });
     }
   </script>
-  <style>
-    body {
-      background-color: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #e50914;
-      margin-bottom: 30px;
-    }
-    .contenedor {
-      max-width: 500px;
-      margin: auto;
-      background-color: #1c1c1c;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      color: #ccc;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 5px;
-      background-color: #2a2a2a;
-      color: white;
-    }
-    button, .btn-confirm, .btn-logout {
-      background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
-      color: white;
-      font-weight: bold;
-      padding: 12px;
-      width: 100%;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      margin-top: 10px;
-      box-shadow: 0 2px 8px rgba(229,9,20,0.15);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      outline: none;
-      letter-spacing: 0.5px;
-    }
-    button:hover, .btn-confirm:hover, .btn-logout:hover {
-      background: linear-gradient(90deg, #b20710 60%, #e50914 100%);
-      box-shadow: 0 4px 16px rgba(229,9,20,0.25);
-      transform: translateY(-2px) scale(1.03);
-    }
-    /* Botón de confirmación rojo */
-    .btn-confirm {
-      background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
-      color: #fff;
-      margin-top: 18px;
-      width: 100%;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      box-shadow: 0 2px 8px rgba(229,9,20,0.15);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      outline: none;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-    }
-    .btn-confirm:hover {
-      background: linear-gradient(90deg, #b20710 60%, #e50914 100%);
-      box-shadow: 0 4px 16px rgba(229,9,20,0.25);
-      transform: translateY(-2px) scale(1.03);
-    }
-    /* Modal de confirmación */
-    .modal-confirm-bg {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-confirm {
-      background: #181818;
-      color: #fff;
-      border-radius: 12px;
-      padding: 32px 28px 24px 28px;
-      box-shadow: 0 0 30px #000;
-      max-width: 350px;
-      width: 90vw;
-      text-align: center;
-      position: relative;
-      animation: fadeInConfirm 0.2s;
-    }
-    @keyframes fadeInConfirm {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .modal-confirm-btns {
-      display: flex;
-      gap: 18px;
-      margin-top: 24px;
-      justify-content: center;
-    }
-    .modal-confirm-btn {
-      flex: 1;
-      padding: 12px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      box-shadow: 0 2px 8px rgba(229,9,20,0.10);
-      outline: none;
-    }
-    .modal-confirm-btn.confirm {
-      background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
-      color: #fff;
-    }
-    .modal-confirm-btn.confirm:hover {
-      background: linear-gradient(90deg, #b20710 60%, #e50914 100%);
-    }
-    .modal-confirm-btn.cancel {
-      background: #2a2a2a;
-      color: #fff;
-    }
-    .modal-confirm-btn.cancel:hover {
-      background: #444;
-    }
-    .mensaje {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    .volver {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .volver a {
-      color: #e50914;
-      text-decoration: none;
-    }
-    /* Notificaciones toast globales */
-    .toast-global-container {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 340px;
-      pointer-events: none;
-    }
-    .toast-global {
-      background: #e50914;
-      color: #fff;
-      padding: 14px 22px;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 1rem;
-      box-shadow: 0 4px 16px rgba(229,9,20,0.18);
-      opacity: 0;
-      transform: translateX(100%);
-      animation: toastIn 0.4s forwards, toastOut 0.4s 2.6s forwards;
-      pointer-events: auto;
-      user-select: none;
-      letter-spacing: 0.5px;
-    }
-    .toast-global.success {
-      background: linear-gradient(90deg, #27ae60 60%, #219150 100%);
-    }
-    .toast-global.fail {
-      background: linear-gradient(90deg, #c0392b 60%, #e50914 100%);
-    }
-    .toast-global.info {
-      background: linear-gradient(90deg, #2980b9 60%, #6dd5fa 100%);
-    }
-    @keyframes toastIn {
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    @keyframes toastOut {
-      to {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-    }
-    /* Toast notification styles */
-    #toast-container {
-      position: fixed;
-      top: 30px;
-      right: 30px;
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      pointer-events: none;
-    }
-    .toast {
-      min-width: 220px;
-      max-width: 350px;
-      background: #232323;
-      color: #fff;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      box-shadow: 0 2px 12px rgba(229,9,20,0.18);
-      opacity: 0.97;
-      pointer-events: auto;
-      transition: opacity 0.3s, transform 0.3s;
-      animation: toastIn 0.3s;
-    }
-    .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
-    .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
-    .toast-info { background: linear-gradient(90deg, #232526 0%, #414345 100%); color: #fff; }
-    .toast.hide {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.98);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(-20px) scale(0.98); }
-      to { opacity: 0.97; transform: none; }
-    }
-    @keyframes fadeInModal {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes fadeOutModal {
-      to { opacity: 0; pointer-events: none; }
-    }
-  </style>
 </head>
-<body>
+<body class="page-body-flex-center">
 
-  <h1>Gestionar Cuenta</h1>
-  <div class="contenedor">
-    <p><strong>Usuario actual:</strong> <span id="usuario-nombre"></span></p>
+  <header class="page-subheader">
+    <div class="page-container">
+        <h1><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">manage_accounts</i> Gestionar Cuenta</h1>
+        <nav>
+            <a href="dash.html" class="btn btn-secondary"><i class="material-icons" style="vertical-align: middle; margin-right: 4px;">arrow_back</i> Volver al Hub</a>
+            <button id="logoutButtonManage" class="btn btn-secondary"><i class="material-icons" style="vertical-align: middle; margin-right: 4px;">logout</i> Cerrar Sesión</button>
+        </nav>
+    </div>
+  </header>
 
-    <label for="nuevoCorreo">Cambiar correo electrónico</label>
-    <input type="email" id="nuevoCorreo" placeholder="Nuevo correo" />
-    <button class="btn-confirm" onclick="cambiarCorreo()">Actualizar correo</button>
+  <main class="page-container" style="width:100%; display:flex; flex-direction:column; align-items:center;"> <!-- Ensure main container also helps centering -->
+    <div class="manage-account-card">
+      <p style="text-align:center; margin-bottom:1.5rem;">Usuario: <strong id="usuario-nombre" style="color:var(--accent-color);"></strong></p>
 
-    <label for="actualContra">Contraseña actual</label>
-    <input type="password" id="actualContra" placeholder="Tu contraseña actual" />
+      <div id="message" class="status-message" role="alert" aria-live="assertive"></div>
 
-    <label for="nuevaContra">Nueva contraseña</label>
-    <input type="password" id="nuevaContra" placeholder="Nueva contraseña" />
+      <section class="form-section">
+        <h2><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">email</i>Cambiar Correo Electrónico</h2>
+        <div class="form-group">
+          <label for="nuevoCorreo">Nuevo Correo:</label>
+          <input type="email" id="nuevoCorreo" placeholder="Ingresa tu nuevo correo" />
+        </div>
+        <button class="btn btn-primary" onclick="cambiarCorreo()">
+            <i class="material-icons">send</i> Actualizar Correo
+        </button>
+      </section>
 
-    <label for="confirmarContra">Confirmar nueva contraseña</label>
-    <input type="password" id="confirmarContra" placeholder="Repite la nueva contraseña" />
-    <button class="btn-confirm" onclick="cambiarContraseña()">Cambiar contraseña</button>
+      <hr style="border: none; height: 1px; background-color: var(--border-color); margin: 2rem 0;">
 
-    <div id="mensaje" class="mensaje"></div>
-
-    <div class="volver">
-      <a href="dash.html">⬅ Volver al panel</a>
+      <section class="form-section">
+        <h2><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">password</i>Cambiar Contraseña</h2>
+        <div class="form-group">
+          <label for="actualContra">Contraseña Actual:</label>
+          <input type="password" id="actualContra" placeholder="Tu contraseña actual" />
+        </div>
+        <div class="form-group">
+          <label for="nuevaContra">Nueva Contraseña:</label>
+          <input type="password" id="nuevaContra" placeholder="Mín. 8 caracteres, mayús., núm., símb." />
+        </div>
+        <div class="form-group">
+          <label for="confirmarContra">Confirmar Nueva Contraseña:</label>
+          <input type="password" id="confirmarContra" placeholder="Repite la nueva contraseña" />
+        </div>
+        <button class="btn btn-primary" onclick="cambiarContraseña()">
+            <i class="material-icons">key</i> Cambiar Contraseña
+        </button>
+      </section>
     </div>
 
-    <!-- Toast notification container -->
-    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
-
-    <!-- Modal de confirmación -->
-    <div id="modal-confirm-bg" class="modal-confirm-bg" style="display:none;">
-      <div class="modal-confirm">
-        <div id="modal-confirm-msg">¿Confirmas cambiar tu contraseña?</div>
-        <div class="modal-confirm-btns">
-          <button class="modal-confirm-btn confirm" id="modal-confirm-yes">Confirmar</button>
-          <button class="modal-confirm-btn cancel" id="modal-confirm-no">Cancelar</button>
+    <!-- Modal de confirmación para cambio de contraseña -->
+    <div id="modal-confirm-bg" class="modal-backdrop">
+      <div class="modal-dialog">
+        <h3 id="modal-confirm-title">Confirmar Acción</h3> <!-- Generic title -->
+        <p id="modal-confirm-msg" style="color:var(--primary-text); margin-bottom:1rem;">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary modal-confirm-btn cancel" id="modal-confirm-no">Cancelar</button>
+          <button class="btn btn-primary modal-confirm-btn confirm" id="modal-confirm-yes">Confirmar</button>
         </div>
       </div>
     </div>
-  </div>
+  </main>
+
+  <footer class="page-footer">
+    <div class="page-container">
+        <p>&copy; 2024 Catálogo App. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Toast container is global from style.css, can be used by showToast if needed -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    // JWT: obtener token
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
-      window.location.href = 'login.html';
+      // Allow access if only changing password and not requiring old one, but API protects
+      // For now, keeping strict check. If user is here, they should be logged in.
+      // window.location.href = 'login.html';
     }
 
-    // Toast notification system
-    function showToast(message, type = 'info', duration = 3500) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add('hide');
-        toast.addEventListener('transitionend', () => toast.remove());
-      }, duration);
+    const messageDiv = document.getElementById("message");
+    function displayLocalMessage(msg, type = 'error') {
+        if (messageDiv) {
+            messageDiv.textContent = msg;
+            messageDiv.className = 'status-message ' + type;
+        }
     }
 
-    // Safe fetch wrapper for error handling y JWT
+    // Global showToast function (from style.css related JS, or should be in a global script)
+    // For now, including a basic version if not present globally.
+    if (typeof showToast !== 'function') {
+        window.showToast = function(message, type = 'info', duration = 3500) {
+            const container = document.getElementById('toast-container') || document.body;
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            toast.style.animation = 'slideInToast 0.4s forwards';
+            setTimeout(() => {
+                toast.style.animation = 'fadeOutToast 0.4s forwards';
+                toast.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'fadeOutToast') toast.remove();
+                }, { once: true });
+            }, duration);
+        }
+    }
+
+
     async function safeFetch(url, options = {}) {
-      options.headers = options.headers || {};
-      if (url.startsWith('http://localhost:3001')) {
-        options.headers['Authorization'] = 'Bearer ' + jwt;
+      options.headers = { ...options.headers, 'Authorization': `Bearer ${jwt}` };
+      if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+          options.headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(options.body);
       }
       try {
         const res = await fetch(url, options);
+        const data = await res.json();
         if (!res.ok) {
-          let errMsg = `Error ${res.status}`;
-          try {
-            const data = await res.json();
-            errMsg = data.error || errMsg;
-          } catch {}
-          throw new Error(errMsg);
+          throw new Error(data.error || `Error ${res.status}`);
         }
-        return await res.json();
+        return data;
       } catch (err) {
-        showToast(err.message || 'Error de conexión con el servidor.', 'error');
-        throw err;
+        // Use displayLocalMessage for form-specific feedback, showToast for general errors
+        displayLocalMessage(err.message || 'Error de conexión con el servidor.', 'error');
+        throw err; // Re-throw for specific catch blocks if needed
       }
     }
 
     const usuario = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!usuario || !usuario.id) {
+      alert("No se encontró información de usuario. Redirigiendo a login.");
       window.location.href = "login.html";
     } else {
-      document.getElementById("usuario-nombre").textContent = usuario.username;
+      const userNameSpan = document.getElementById("usuario-nombre");
+      if(userNameSpan) userNameSpan.textContent = usuario.username;
     }
 
     async function cambiarCorreo() {
+      displayLocalMessage('', 'error'); // Clear previous
       const nuevoCorreo = document.getElementById("nuevoCorreo").value.trim();
-      if (!nuevoCorreo || !nuevoCorreo.includes("@")) {
-        showToast("Ingresa un correo válido.", "error");
+      if (!nuevoCorreo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoCorreo)) { // Basic email format check
+        displayLocalMessage("Ingresa un correo electrónico válido.", "error");
         return;
       }
       try {
         const data = await safeFetch('http://localhost:3001/update_email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: usuario.id, email: nuevoCorreo })
+          body: { user_id: usuario.id, email: nuevoCorreo }
         });
         if (data.ok) {
-          showToast("Correo actualizado correctamente.", "success");
+          displayLocalMessage("Correo actualizado correctamente. Es posible que necesites verificarlo.", "success");
           document.getElementById("nuevoCorreo").value = "";
+          // Update local storage if email is stored there
+          const updatedUser = {...usuario, email: nuevoCorreo };
+          localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+          document.getElementById("usuario-nombre").textContent = updatedUser.username; // Refresh display if username changes with email
         } else {
-          showToast(data.error || "Error al actualizar correo.", "error");
+          // safeFetch throws an error, so this else might not be reached if error parsing is robust
+          displayLocalMessage(data.error || "Error al actualizar correo.", "error");
         }
-      } catch {}
+      } catch (err) { /* message already shown by safeFetch */ }
     }
 
     function validarSeguridad(contra) {
@@ -376,73 +275,89 @@
       return minLargo && mayus && numero && simbolo;
     }
 
-    function showConfirmModal(msg, onConfirm) {
+    function showConfirmModal(title, msg, onConfirm) {
       const bg = document.getElementById('modal-confirm-bg');
+      const titleElem = document.getElementById('modal-confirm-title'); // Assuming you add this ID
       const msgDiv = document.getElementById('modal-confirm-msg');
+
+      if(titleElem) titleElem.textContent = title;
       msgDiv.textContent = msg;
-      bg.style.display = 'flex';
+      bg.style.display = 'flex'; // Show modal
+      setTimeout(() => bg.classList.add('active'), 10); // Trigger transition
+
       function close() {
-        bg.style.display = 'none';
-        yes.removeEventListener('click', confirmHandler);
-        no.removeEventListener('click', cancelHandler);
+        bg.classList.remove('active');
+        setTimeout(() => bg.style.display = 'none', 300); // Wait for transition
+        yesBtn.removeEventListener('click', confirmHandler);
+        noBtn.removeEventListener('click', cancelHandler);
       }
-      const yes = document.getElementById('modal-confirm-yes');
-      const no = document.getElementById('modal-confirm-no');
+      const yesBtn = document.getElementById('modal-confirm-yes');
+      const noBtn = document.getElementById('modal-confirm-no');
       function confirmHandler() { close(); onConfirm(); }
       function cancelHandler() { close(); }
-      yes.addEventListener('click', confirmHandler);
-      no.addEventListener('click', cancelHandler);
+      yesBtn.addEventListener('click', confirmHandler, { once: true });
+      noBtn.addEventListener('click', cancelHandler, { once: true });
     }
 
     async function cambiarContraseña() {
+      displayLocalMessage('', 'error'); // Clear previous
       const actual = document.getElementById("actualContra").value;
       const nueva = document.getElementById("nuevaContra").value;
       const confirmar = document.getElementById("confirmarContra").value;
+
       if (!actual || !nueva || !confirmar) {
-        showToast("Por favor, completa todos los campos.", "error");
+        displayLocalMessage("Por favor, completa todos los campos de contraseña.", "error");
         return;
       }
       if (nueva !== confirmar) {
-        showToast("La nueva contraseña no coincide.", "error");
+        displayLocalMessage("La nueva contraseña y su confirmación no coinciden.", "error");
         return;
       }
       if (!validarSeguridad(nueva)) {
-        showToast("La nueva contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.", "error");
+        displayLocalMessage("Contraseña no segura: Mín. 8 caracteres, una mayúscula, un número y un símbolo.", "error");
         return;
       }
-      showConfirmModal('¿Confirmas cambiar tu contraseña?', async () => {
+
+      showConfirmModal('Confirmar Cambio de Contraseña', '¿Estás seguro de que deseas cambiar tu contraseña?', async () => {
         try {
           const data = await safeFetch('http://localhost:3001/update_password', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: usuario.id, old_password: actual, new_password: nueva })
+            body: { user_id: usuario.id, old_password: actual, new_password: nueva }
           });
           if (data.ok) {
-            showToast("Contraseña actualizada correctamente.", "success");
+            displayLocalMessage("Contraseña actualizada correctamente.", "success");
             document.getElementById("actualContra").value = "";
             document.getElementById("nuevaContra").value = "";
             document.getElementById("confirmarContra").value = "";
           } else {
-            showToast(data.error || "Error al actualizar contraseña.", "error");
+             // This part might not be reached if safeFetch throws and handles error display
+            displayLocalMessage(data.error || "Error al actualizar contraseña.", "error");
           }
-        } catch {}
+        } catch (err) { /* message already shown by safeFetch */ }
       });
     }
 
-    // Logout mejorado: limpiar JWT y usuario
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      if (jwt) {
-        try {
-          await fetch('http://localhost:3001/logout', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + jwt }
-          });
-        } catch {}
-      }
-      localStorage.removeItem('jwt');
-      localStorage.removeItem('loggedInUser');
-      window.location.href = 'login.html';
-    });
+    const logoutButtonManage = document.getElementById('logoutButtonManage');
+    if (logoutButtonManage) {
+        logoutButtonManage.addEventListener('click', async () => {
+            const confirmLogout = confirm("¿Seguro que quieres cerrar sesión?");
+            if (confirmLogout) {
+                const currentToken = localStorage.getItem('jwt');
+                if (currentToken) {
+                    try {
+                        await fetch('/logout', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + currentToken }
+                        });
+                    } catch (err) { console.error('Logout API call failed:', err); }
+                }
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('jwt');
+                localStorage.removeItem('adminToken');
+                window.location.href = 'index.html';
+            }
+        });
+    }
   </script>
 </body>
 </html>
