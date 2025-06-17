@@ -1,116 +1,227 @@
-/* Reset básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #111;
-    color: #fff;
-    line-height: 1.6;
-    padding: 20px;
-  }
-  
-  /* Encabezado */
-  header {
-    text-align: center;
-    padding: 20px 0;
-    margin-bottom: 30px;
-  }
-  
-  header h1 {
-    font-size: 2.5rem;
-    color: #e50914; /* Estilo Netflix */
-  }
-  
-  /* Contenedor principal */
-  .catalog {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-  }
-  
-  /* Tarjeta individual */
-  .card {
-    background-color: #1c1c1c;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
-  }
-  
-  .card img {
-    width: 100%;
-    height: 320px;
-    object-fit: cover;
-  }
-  
-  .card-content {
-    padding: 15px;
-  }
-  
-  .card-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #e50914;
-  }
-  
-  .card-description {
-    font-size: 0.9rem;
-    color: #ccc;
-    height: 60px;
-    overflow: hidden;
-  }
-  
-  /* Filtros o menú superior */
-  .filters {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  
-  .filters select, .filters input {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-  }
-  
-  .filters select {
-    background-color: #333;
-    color: #fff;
-  }
-  
-  .filters input[type="text"] {
-    background-color: #222;
-    color: #fff;
-  }
-  
-  /* Pie de página */
-  footer {
-    text-align: center;
-    margin-top: 40px;
-    color: #666;
-    font-size: 0.8rem;
-  }
-  
-  /* Responsive ajustes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Page Structure & Common Elements for Media Pages */
+:root {
+  --primary-bg: #181818;
+  --secondary-bg: #111111;
+  --card-bg: #242424;
+  --primary-text: #EAEAEA;
+  --heading-text: #FFFFFF;
+  --accent-color: #e50914;
+  --accent-rgb: 229, 9, 20; /* RGB for accent color */
+  --accent-hover: #ff3333;
+  --muted-text: #888888;
+  --border-color: #333333;
+  --input-bg: #2c2c2c;
+  --button-text-color: #FFFFFF; /* Default button text */
+  --disabled-bg: #555555;
+  --disabled-text: #999999;
+  --toast-success-bg: #27ae60; /* MediumSeaGreen like */
+  --toast-success-rgb: 60, 179, 113; /* For rgba */
+  --toast-fail-bg: #c0392b;
+  --toast-shadow-color: rgba(0,0,0,0.5);
+  --card-padding-y: 1.5rem;
+  --card-padding-x: 2rem;
+  --border-radius: 6px; /* General border radius */
+}
+
+/* Global Reset/Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Body Styling */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Headings & Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-text);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+h1 { font-size: 2.5rem; font-weight: 700; }
+h2 { font-size: 2rem; font-weight: 700; }
+h3 { font-size: 1.75rem; font-weight: 600; }
+h4 { font-size: 1.5rem; font-weight: 600; }
+h5 { font-size: 1.25rem; font-weight: 500; }
+h6 { font-size: 1rem; font-weight: 500; }
+
+p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.text-muted {
+  color: var(--muted-text);
+}
+
+/* Links */
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+a:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+/* General container */
+.page-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Buttons */
+.btn, button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--button-text-color);
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.btn .material-icons { /* For icons inside buttons */
+    vertical-align: middle;
+    margin-right: 0.3em;
+    font-size: 1.2em;
+}
+
+
+.btn:hover, button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.btn:active, button:active {
+  transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.btn:disabled, button:disabled {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary { /* Already default .btn style but can be explicit */
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+}
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+  box-shadow: none;
+}
+.btn-secondary:hover {
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.btn-secondary:active {
+  transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.btn-secondary:disabled {
+  background-color: transparent;
+  border-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  box-shadow: none;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+.btn-sm .material-icons {
+    font-size: 1.1rem;
+    vertical-align: middle;
+    margin-right: 0.2em;
+}
+
+
+/* Form Inputs & Textareas */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea,
+select {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--primary-text);
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  margin-bottom: 1rem;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.3);
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23EAEAEA' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.293l-4.646-4.647a.5.5 0 0 1 .708-.708L8 9.879l4.061-4.061a.5.5 0 0 1 .707.707L8 11.293z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 16px;
+  padding-right: 2.5rem;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+input[type="email"]::placeholder,
+textarea::placeholder {
+  color: var(--muted-text);
+  opacity: 0.7;
+}
+
+/* Page Structure & Common Elements */
 .page-subheader {
-  background-color: var(--secondary-bg); /* Assuming --secondary-bg is defined in :root */
+  background-color: var(--secondary-bg);
   padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color); /* Assuming --border-color is defined */
+  border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   margin-bottom: 1.5rem;
 }
@@ -118,26 +229,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* .page-container class should handle max-width and padding */
 }
 .page-subheader h1 {
-  color: var(--accent-color); /* Assuming --accent-color is defined */
+  color: var(--accent-color);
   margin-bottom: 0;
   font-size: 1.8rem;
+}
+.page-subheader nav .btn + .btn { /* Spacing for multiple buttons in subheader nav */
+    margin-left: 0.5rem;
 }
 .page-subheader nav .btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
 }
 
-/* Filters Toolbar Styling */
 .filters-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     padding: 1.25rem;
-    background-color: var(--card-bg); /* Assuming --card-bg is defined */
-    border-radius: 8px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
     border: 1px solid var(--border-color);
 }
@@ -146,10 +258,8 @@
     flex-grow: 1;
     min-width: 200px;
     margin-bottom: 0;
-    /* Inputs/selects should pick up global form styling from :root an general input tags */
 }
 
-/* Pagination Styling */
 .pagination {
   display: flex;
   justify-content: center;
@@ -159,39 +269,100 @@
 }
 .pagination .page-indicator {
     padding: 0.6rem 1.2rem;
-    background-color: var(--input-bg); /* Assuming --input-bg is defined */
-    border-radius: 6px;
+    background-color: var(--input-bg);
+    border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
-    color: var(--primary-text); /* Assuming --primary-text is defined */
+    color: var(--primary-text);
     font-size: 0.95rem;
     font-weight: 500;
 }
-/* Pagination buttons will use global .btn styling */
+
+/* Status Messages */
+.status-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid transparent;
+    display: none;
+    text-align: center;
+    font-weight: 500;
+}
+.status-message:not(:empty) {
+    display: block;
+}
+.status-message.error {
+    background-color: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+.status-message.success {
+    background-color: rgba(var(--toast-success-rgb), 0.15);
+    border-color: var(--toast-success-bg);
+    color: var(--toast-success-bg);
+}
+
+/* Dashboard Navigation Grid */
+.dash-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+.dash-nav-item {
+    background-color: var(--card-bg);
+    padding: var(--card-padding-y) var(--card-padding-x);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: var(--primary-text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.dash-nav-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border-color: var(--accent-color);
+}
+.dash-nav-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+.dash-nav-item h3 {
+    color: var(--heading-text);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.dash-nav-item p {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+    flex-grow: 1;
+}
 
 /* Media Grid and Card Styling */
 .media-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.5rem;
-  /* Padding should be on .page-container that wraps this grid */
 }
-
 .media-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
-
 .media-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 16px rgba(0,0,0,0.35);
 }
-
 .media-card-poster {
   width: 100%;
   height: auto;
@@ -199,17 +370,15 @@
   object-fit: cover;
   border-bottom: 1px solid var(--border-color);
 }
-
 .media-card-body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
-
 .media-card-title {
   font-size: 1.1rem;
-  color: var(--heading-text); /* Assuming --heading-text is defined */
+  color: var(--heading-text);
   margin-bottom: 0.5rem;
   font-weight: 600;
   display: -webkit-box;
@@ -219,27 +388,23 @@
   text-overflow: ellipsis;
   min-height: 2.5em;
 }
-
 .media-card-info {
   font-size: 0.85rem;
-  color: var(--muted-text); /* Assuming --muted-text is defined */
+  color: var(--muted-text);
   margin-bottom: 0.75rem;
-  /* flex-grow: 1; /* Removed to allow overview to push it up */
 }
-
 .media-card-overview {
   font-size: 0.85rem;
   color: var(--muted-text);
   margin-bottom: 0.75rem;
-  flex-grow: 1; /* This will take available space and push actions down */
+  flex-grow: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Adjust number of lines as needed */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 3.9em; /* Approx 3 lines height (0.85rem * 1.6 line-height * 3) */
+  min-height: 3.9em;
 }
-
 .media-card-actions {
   display: flex;
   gap: 0.5rem;
@@ -248,70 +413,34 @@
   padding-top: 0.75rem;
   border-top: 1px solid var(--border-color);
 }
-
 .media-card-actions .btn {
   flex: 1 1 auto;
   padding: 0.6rem 0.5rem;
   font-size: 0.8rem;
 }
-.media-card-actions .btn.btn-favorite.active-favorite,
-.media-card-actions .btn.btn-save.active-save {
-    background-color: var(--accent-hover); /* Assuming --accent-hover is defined */
-    color: var(--button-text-color); /* Assuming --button-text-color is defined */
+.media-card-actions .btn.active { /* General active state for fav/save buttons */
+    background-color: var(--accent-hover);
+    color: var(--button-text-color);
 }
-.media-card-actions .btn svg {
-    width: 1em;
-    height: 1em;
-    margin-right: 0.3em;
-    vertical-align: middle;
-    fill: currentColor; /* SVG color to match button text color */
+.media-card-actions .btn.active .material-icons { /* Icon color for active state */
+    /* Use a specific color or rely on button's text color */
 }
-.media-card-actions .btn.btn-favorite.active-favorite svg {
-    fill: gold; /* Example: gold star for active favorite */
-}
-.media-card-actions .btn.btn-save.active-save svg {
-    /* Example: a specific color for active save, or just rely on button background change */
+.media-card-actions .btn .material-icons { /* Default icon color matches button text */
+    fill: currentColor;
 }
 
 
-  @media (max-width: 768px) { /* For tablets */
-    .media-grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-    .media-card-title {
-        font-size: 1.05rem;
-        min-height: 2.4em;
-    }
-    .media-card-info {
-        font-size: 0.8rem;
-    }
-    .media-card-actions .btn {
-        font-size: 0.75rem;
-    }
-     .page-subheader h1 {
-        font-size: 1.6rem;
-    }
-    .filters-toolbar {
-        padding: 1rem;
-        gap: 0.75rem;
-    }
-    .filters-toolbar input[type="text"],
-    .filters-toolbar select {
-        min-width: 150px;
-    }
-  }
+/* Footer Styling */
+.page-footer { /* Changed from just 'footer' for specificity */
+  text-align: center;
+  margin-top: 2.5rem; /* Increased margin */
+  padding: 1.5rem;
+  color: var(--muted-text);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
 
-  @media (max-width: 600px) {
-    .card img { /* This is an old class, .media-card-poster is the new one */
-      height: 250px;
-    }
-  
-    .card-description {
-      height: auto;
-    }
-  }
-  /* Notificaciones Toast */
+/* Toast Notifications (using variables) */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -320,42 +449,123 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 300px;
+  max-width: 320px;
 }
-
 .toast {
-  background-color: #e50914; /* rojo Netflix */
-  color: white;
-  padding: 12px 18px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.7);
-  font-weight: bold;
+  background-color: var(--accent-color);
+  color: var(--heading-text);
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px var(--toast-shadow-color);
+  font-weight: 500;
   opacity: 0;
   transform: translateX(100%);
-  animation: slideIn 0.4s forwards, fadeOut 0.4s 2.6s forwards;
+  animation: slideInToast 0.4s forwards, fadeOutToast 0.4s 3.6s forwards;
   pointer-events: auto;
   user-select: none;
+  font-size: 0.95rem;
 }
-
 .toast.success {
-  background-color: #27ae60; /* verde para éxito */
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.7);
+  background-color: var(--toast-success-bg);
+  box-shadow: 0 4px 12px var(--toast-shadow-color); /* Could use a greener shadow */
+}
+.toast.fail { /* Or .toast.error */
+  background-color: var(--toast-fail-bg);
+  box-shadow: 0 4px 12px var(--toast-shadow-color); /* Could use a redder shadow */
+}
+@keyframes slideInToast {
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOutToast {
+  to { opacity: 0; transform: translateX(100%); }
 }
 
-@keyframes slideIn {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Responsive Adjustments */
+@media (max-width: 768px) { /* For tablets */
+    body { font-size: 15px; }
+    h1 { font-size: 2.2rem; }
+    h2 { font-size: 1.8rem; }
+    .page-container { padding: 15px; }
+
+    .filters-toolbar {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    .filters-toolbar input[type="text"],
+    .filters-toolbar select {
+        min-width: 150px;
+    }
+    .btn, button {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .media-grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    .media-card-title {
+        font-size: 1.05rem;
+        min-height: 2.4em;
+    }
+    .media-card-info, .media-card-overview {
+        font-size: 0.8rem;
+    }
+    .media-card-actions .btn {
+        font-size: 0.75rem;
+    }
+     .page-subheader h1 { font-size: 1.6rem; }
 }
 
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: translateX(100%);
-  }
+@media (max-width: 600px) { /* For mobile phones */
+   .toast-container {
+        right: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+        align-items: center;
+    }
+    .toast { width: 100%; }
+    .media-grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .page-subheader .page-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .page-subheader h1 { font-size: 1.5rem; }
+     .filters-toolbar {
+        flex-direction: column;
+    }
+    .filters-toolbar input[type="text"],
+    .filters-toolbar select {
+        width: 100%;
+    }
 }
-.toast.fail {
-  background-color: #c0392b; /* rojo oscuro para error */
-  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.7);
+
+@media (max-width: 480px) {
+    body { font-size: 14px; } /* Slightly smaller base for very small screens */
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .page-container { padding: 10px; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    textarea,
+    select,
+    .btn, button {
+        font-size: 0.85rem;
+    }
+    .media-grid-container {
+        padding: 0.5rem;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+    .media-card-body { padding: 0.75rem; }
+    .media-card-title {
+        font-size: 0.95rem;
+        min-height: 2.3em;
+    }
+    .media-card-actions .btn {
+        padding: 0.5rem;
+    }
 }

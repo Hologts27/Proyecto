@@ -6,81 +6,90 @@
   <title>Inicio | Catálogo de Películas y Series</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="var(--primary-bg)"> <!-- Use CSS variable -->
+
   <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Specific styles for index.html landing page structure */
+    body.landing-page-body {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      font-family: var(--font-family, 'Inter', sans-serif); /* Ensure font is applied */
+      background-color: var(--primary-bg); /* Ensure theme background */
     }
 
-    .container {
+    .landing-container {
       text-align: center;
-      background-color: #1e1e1e;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-      width: 90%;
-      max-width: 400px;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      color: #e50914;
-    }
-
-    p {
-      margin-bottom: 30px;
-      color: #ccc;
-    }
-
-    .btn {
-      display: block;
+      background-color: var(--card-bg);
+      padding: var(--card-padding-y) var(--card-padding-x); /* Use CSS variables */
+      border-radius: var(--border-radius, 8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       width: 100%;
-      margin: 10px 0;
-      padding: 12px;
-      background-color: #e50914;
-      color: #fff;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
-      text-decoration: none;
+      max-width: 480px;
+      border: 1px solid var(--border-color);
     }
 
-    .btn:hover {
-      background-color: #b20710;
+    .landing-container h1 {
+      font-size: 2.8rem;
+      color: var(--accent-color);
+      margin-bottom: 1.5rem;
+      font-weight: 700; /* Ensure heading font weight */
+    }
+
+    .landing-container p {
+      font-size: 1.1rem;
+      color: var(--primary-text);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Buttons will primarily be styled by global .btn from style.css */
+    .landing-container .btn {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding-top: 0.85rem;    /* Specific padding for these buttons */
+      padding-bottom: 0.85rem;
+      font-size: 1.05rem;
+    }
+    .landing-container .btn:last-child {
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 600px) {
+      .landing-container {
+        padding: calc(var(--card-padding-y) * 0.75) calc(var(--card-padding-x) * 0.75);
+      }
+      .landing-container h1 {
+        font-size: 2.2rem;
+      }
+      .landing-container p {
+        font-size: 1rem;
+      }
     }
   </style>
 
   <script>
     // Redirigir a dashboard si ya hay sesión iniciada
-    if (localStorage.getItem("usuarioActual")) {
+    if (localStorage.getItem("loggedInUser")) { // Changed from "usuarioActual"
       window.location.href = "dash.html";
     }
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('Service Worker registration failed:', err));
       });
     }
   </script>
 
 </head>
-<body>
+<body class="landing-page-body">
 
-  <div class="container">
+  <div class="landing-container"> <!-- Changed class to landing-container -->
     <h1>🎬 Bienvenido</h1>
     <p>Accede a tu catálogo de películas y series favoritas.</p>
-    <a class="btn" href="login.html">Iniciar Sesión</a>
-    <a class="btn" href="register.html">Registrarse</a>
+    <a class="btn btn-primary" href="login.html">Iniciar Sesión</a> <!-- Added btn-primary for emphasis -->
+    <a class="btn btn-secondary" href="register.html">Registrarse</a>
   </div>
 
 </body>

@@ -12,13 +12,13 @@
   <style>
     /* Admin page specific styles */
     body.admin-page-body {
-      padding-bottom: 60px; /* Ensure footer doesn't overlap content */
+      /* Body itself will use global styles from style.css */
     }
 
     .admin-section-card {
       background-color: var(--card-bg);
-      padding: 1.5rem 2rem;
-      border-radius: 8px;
+      padding: var(--card-padding-y) var(--card-padding-x);
+      border-radius: var(--border-radius);
       margin-bottom: 2rem;
       border: 1px solid var(--border-color);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -27,7 +27,9 @@
       color: var(--accent-color);
       margin-top: 0;
       margin-bottom: 1.5rem;
-      font-size: 1.6rem;
+      font-size: 1.75rem; /* Using h3 size for section titles */
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
     }
     .admin-section-card h3 {
         color: var(--heading-text);
@@ -50,32 +52,28 @@
       vertical-align: middle;
     }
     .admin-table th {
-      background-color: var(--input-bg);
+      background-color: var(--input-bg); /* Darker header for table */
       color: var(--heading-text);
       font-weight: 600;
     }
     .admin-table tbody tr:nth-child(even) {
-      background-color: rgba(0,0,0,0.05); /* Subtle stripe for dark theme */
+      background-color: rgba(var(--accent-rgb), 0.03); /* Very subtle striping */
     }
-    .admin-table .btn { /* Smaller buttons in table cells */
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
-      margin-right: 0.5rem;
+    .admin-table .btn { /* Buttons in table cells */
+      margin-right: 0.5rem; /* Spacing between buttons in a cell */
     }
     .admin-table .btn:last-child {
       margin-right: 0;
     }
-    .admin-table select.role-select { /* Ensure select within table inherits form styles */
-        padding: 0.4rem 0.6rem; /* Adjust padding to fit well in table */
-        font-size: 0.9rem;
-        /* width will be auto or specific small width */
-        width: auto;
-        min-width: 100px;
-    }
+     /* Using .btn-sm for table actions */
     .admin-table td .action-group {
         display: flex;
         gap: 0.5rem;
         align-items: center;
+    }
+    .admin-table td .action-group .btn.btn-sm .material-icons {
+        font-size: 1rem; /* Ensure icon is small too */
+        margin-right: 0.1em;
     }
 
 
@@ -84,7 +82,7 @@
       background-color: var(--input-bg);
       color: var(--primary-text);
       padding: 1rem;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       white-space: pre-wrap;
       word-break: break-all;
       max-height: 400px;
@@ -93,12 +91,12 @@
       margin-top: 1rem;
     }
 
-    /* Modal Styling (ensure it uses variables) */
-    .modal-backdrop { /* Renamed from modal-reset-bg for clarity */
+    /* Modal Styling */
+    .modal-backdrop {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: rgba(0,0,0,0.7);
       z-index: 10000;
-      display: none; /* Hidden by default */
+      display: none;
       align-items: center;
       justify-content: center;
       opacity: 0;
@@ -108,15 +106,15 @@
       display: flex;
       opacity: 1;
     }
-    .modal-dialog { /* Renamed from modal-reset-content */
+    .modal-dialog {
       background-color: var(--card-bg);
-      padding: 2rem;
-      border-radius: 8px;
+      padding: var(--card-padding-y) var(--card-padding-x);
+      border-radius: var(--border-radius);
       border: 1px solid var(--border-color);
       box-shadow: 0 5px 20px rgba(0,0,0,0.4);
       min-width: 320px;
       max-width: 90%;
-      width: 400px; /* Specific width for this modal */
+      width: 450px; /* Specific width for password reset modal */
       transform: scale(0.95);
       transition: transform 0.3s ease-in-out;
     }
@@ -128,12 +126,17 @@
       margin-top: 0;
       margin-bottom: 1.5rem;
       text-align: center;
+      font-size: 1.5rem;
     }
-    .modal-dialog .form-group { /* Spacing for modal form elements */
+    .modal-dialog .form-group {
         margin-bottom: 1rem;
     }
-    .modal-dialog .form-group input {
-        margin-bottom: 0; /* Remove default input margin if label is on top */
+    .modal-dialog .form-group label {
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+    }
+    .modal-dialog .form-group input { /* Inputs already styled globally */
+        margin-bottom: 0;
     }
     .modal-dialog .modal-actions {
       display: flex;
@@ -141,57 +144,47 @@
       justify-content: flex-end;
       margin-top: 1.5rem;
     }
-    .modal-dialog .modal-actions .btn {
-        padding: 0.6rem 1.2rem;
-    }
-    #reset-pass-msg { /* Error message inside modal */
+    #reset-pass-msg {
         color: var(--accent-color);
         margin-top: 1rem;
         text-align: center;
         min-height: 1.2em;
+        font-size: 0.9rem;
     }
-
-    /* Status Message Area */
-    #adminStatusMessage {
-        padding: 0.75rem;
-        border-radius: 6px;
-        margin-bottom: 1.5rem;
+    /* Status Message Area is covered by global .status-message in style.css */
+    .dashboard-stats-item {
+        background-color: var(--input-bg);
+        padding: 1rem;
+        border-radius: var(--border-radius);
         text-align: center;
-        font-weight: 500;
+        border: 1px solid var(--border-color);
     }
-    #adminStatusMessage.success {
-        background-color: rgba(var(--toast-success-rgb, 39, 174, 96), 0.15); /* Define --toast-success-rgb */
-        color: var(--toast-success-bg);
-        border: 1px solid rgba(var(--toast-success-rgb, 39, 174, 96), 0.3);
-    }
-    #adminStatusMessage.error {
-        background-color: rgba(var(--accent-rgb), 0.1);
+    .dashboard-stats-item strong {
+        font-size: 1.5rem;
         color: var(--accent-color);
-        border: 1px solid rgba(var(--accent-rgb), 0.3);
+        display: block;
     }
-    #adminStatusMessage:empty {
-        display: none;
-    }
-
   </style>
 </head>
 <body class="admin-page-body">
 
   <header class="page-subheader">
     <div class="page-container">
-      <h1>Panel de Administración</h1>
+      <h1><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">admin_panel_settings</i>Panel de Administración</h1>
       <nav>
         <a href="dash.html" class="btn btn-secondary">Volver al Hub</a>
-        <button id="admin-logout-btn" class="btn btn-secondary" style="margin-left: 0.5rem;">Cerrar Sesión Admin</button>
+        <button id="admin-logout-btn" class="btn btn-secondary">
+            <i class="material-icons">logout</i>Cerrar Sesión
+        </button>
       </nav>
     </div>
   </header>
 
   <main class="page-container">
-    <div id="adminStatusMessage" role="alert"></div>
+    <div id="adminStatusMessage" class="status-message" role="alert" aria-live="assertive"></div>
 
     <section class="admin-section-card">
-      <h2>Gestión de Usuarios</h2>
+      <h2><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">people</i>Gestión de Usuarios</h2>
       <table class="admin-table" id="usuarios-table">
         <thead>
           <tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
@@ -200,7 +193,6 @@
       </table>
     </section>
 
-    <!-- Modal para resetear contraseña -->
     <div id="modal-reset-backdrop" class="modal-backdrop">
       <div class="modal-dialog" id="modal-reset-dialog">
         <h3>Resetear Contraseña</h3>
@@ -221,19 +213,20 @@
     </div>
 
     <section class="admin-section-card">
-      <h2>Gestión de Logs de Acceso</h2>
-      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-        <button class="btn" id="ver-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">visibility</i> Ver Logs</button>
-        <button class="btn" id="descargar-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">download</i> Descargar Logs</button>
-        <button class="btn btn-danger" id="limpiar-logs-btn"><i class="material-icons" style="vertical-align: middle; margin-right: 0.3em;">delete_sweep</i> Limpiar Logs</button>
+      <h2><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">article</i>Gestión de Logs</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <button class="btn" id="ver-logs-btn"><i class="material-icons">visibility</i> Ver Logs</button>
+        <button class="btn" id="descargar-logs-btn"><i class="material-icons">download</i> Descargar Logs</button>
+        <button class="btn btn-danger" id="limpiar-logs-btn"><i class="material-icons">delete_sweep</i> Limpiar Logs</button>
       </div>
       <pre id="logs-display" style="display:none;"></pre>
     </section>
 
     <section class="admin-section-card">
-        <h2>Estadísticas del Dashboard</h2>
-        <div id="dashboard-stats">
-            <p>Cargando estadísticas...</p>
+        <h2><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">monitoring</i>Estadísticas</h2>
+        <div id="dashboard-stats-container">
+            <!-- Stats will be loaded here by JS -->
+            <p class="text-muted">Cargando estadísticas...</p>
         </div>
     </section>
 
@@ -241,12 +234,9 @@
 
   <footer class="page-footer">
     <div class="page-container">
-        <p>© 2024 Catálogo App Admin. Todos los derechos reservados.</p>
+        <p>&copy; 2024 Catálogo App Admin. Todos los derechos reservados.</p>
     </div>
   </footer>
-
-  <!-- Toast container is available globally from style.css, no need for a separate one here unless specifically desired -->
-  <!-- <div id="toast-container"></div> -->
 
   <script>
     const adminToken = localStorage.getItem('adminToken');
@@ -258,7 +248,7 @@
         adminRole = payload.role;
       } catch(e) {
         console.error("Error decoding admin token:", e);
-        adminRole = null; // Ensure adminRole is null if token is invalid
+        adminRole = null;
       }
     }
 
@@ -269,27 +259,27 @@
 
     const adminStatusMessage = document.getElementById('adminStatusMessage');
 
-    function showAdminMessage(message, type = 'info') {
+    function showAdminMessage(message, type = 'error') { // Default to error if not specified
         if (adminStatusMessage) {
             adminStatusMessage.textContent = message;
-            adminStatusMessage.className = type; // 'success' or 'error'
-            adminStatusMessage.style.display = 'block';
-            setTimeout(() => {
-                adminStatusMessage.style.display = 'none';
+            adminStatusMessage.className = `status-message ${type}`; // type can be 'error' or 'success'
+
+            setTimeout(() => { // Auto-hide message
                 adminStatusMessage.textContent = '';
-                adminStatusMessage.className = '';
-            }, 5000); // Hide after 5 seconds
+                adminStatusMessage.className = 'status-message';
+            }, 5000);
+        } else {
+            console.warn("adminStatusMessage div not found. Message:", message);
         }
     }
 
-
     function logoutAdmin() {
-      fetch('http://localhost:3001/logout', { // Assuming same logout endpoint invalidates any JWT
+      fetch('http://localhost:3001/logout', {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + adminToken }
+        headers: { 'Authorization': `Bearer ${adminToken}` }
       }).finally(() => {
         localStorage.removeItem('adminToken');
-        localStorage.removeItem('loggedInUser'); // Also clear regular user session
+        localStorage.removeItem('loggedInUser');
         localStorage.removeItem('jwt');
         window.location.href = 'index.html';
       });
@@ -298,32 +288,34 @@
 
     async function fetchWithAuth(url, options = {}) {
         options.headers = { ...options.headers, 'Authorization': `Bearer ${adminToken}` };
-        if (options.body && typeof options.body === 'object') { // Ensure body is stringified if it's an object
+        if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
              options.headers['Content-Type'] = 'application/json';
              options.body = JSON.stringify(options.body);
         }
+
         const response = await fetch(url, options);
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: `HTTP error ${response.status}` }));
-            throw new Error(errorData.error || `Error ${response.status}`);
-        }
-        // For DELETE or other methods that might not return JSON
         const contentType = response.headers.get("content-type");
+        let data;
         if (contentType && contentType.indexOf("application/json") !== -1) {
-            return response.json();
+            data = await response.json();
         } else {
-            return response.text(); // Or handle as appropriate
+            data = await response.text(); // For plain text responses like logs
         }
+
+        if (!response.ok) {
+            const errorMessage = (typeof data === 'object' && data.error) ? data.error : (data || `HTTP error ${response.status}`);
+            throw new Error(errorMessage);
+        }
+        return data;
     }
 
     async function cargarUsuarios() {
       try {
         const usuarios = await fetchWithAuth('http://localhost:3001/admin/usuarios');
         const tbody = document.querySelector('#usuarios-table tbody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // Clear existing rows
         usuarios.forEach(u => {
           const tr = document.createElement('tr');
-          // Removed fade-in for simplicity, can be added back via CSS if desired
           tr.innerHTML = `
             <td>${u.id}</td>
             <td>${u.username}</td>
@@ -336,9 +328,9 @@
             </td>
             <td>
               <div class="action-group">
-                <button class="btn btn-primary" onclick="cambiarRol(${u.id}, this)">Actualizar Rol</button>
-                <button class="btn" onclick="abrirResetModal(${u.id}, '${u.username}')">Reset Pass</button>
-                <button class="btn btn-danger" onclick="eliminarUsuario(${u.id}, this)">Eliminar</button>
+                <button class="btn btn-sm btn-primary" onclick="cambiarRol(${u.id}, this)">Actualizar</button>
+                <button class="btn btn-sm" onclick="abrirResetModal(${u.id}, '${u.username}')">Reset Pass</button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarUsuario(${u.id}, this)">Eliminar</button>
               </div>
             </td>
           `;
@@ -350,7 +342,7 @@
     }
 
     async function cambiarRol(userId, btn) {
-      const select = document.querySelector(`select[data-id='${userId}']`);
+      const select = btn.closest('td').previousElementSibling.querySelector('select.role-select');
       const nuevoRol = select.value;
       btn.disabled = true;
       try {
@@ -359,9 +351,10 @@
           body: { user_id: userId, role: nuevoRol }
         });
         showAdminMessage('Rol actualizado correctamente.', 'success');
-        cargarUsuarios(); // Refresh list
+        // No need to call cargarUsuarios() if UI update is handled or not strictly necessary immediately
       } catch (error) {
         showAdminMessage(`Error al actualizar rol: ${error.message}`, 'error');
+        select.value = select.querySelector('option[selected]').value; // Revert dropdown on error
       } finally {
         btn.disabled = false;
       }
@@ -377,7 +370,7 @@
           body: { user_id: userId }
         });
         showAdminMessage('Usuario eliminado.', 'success');
-        if(tr) tr.remove(); // Optimistic UI update
+        if(tr) tr.remove();
       } catch (error) {
         showAdminMessage(`Error al eliminar usuario: ${error.message}`, 'error');
       } finally {
@@ -385,16 +378,16 @@
       }
     }
 
-    // Log Management
     const logsDisplay = document.getElementById('logs-display');
     document.getElementById('ver-logs-btn').addEventListener('click', async () => {
         try {
             const logData = await fetchWithAuth('http://localhost:3001/admin/logs');
-            logsDisplay.textContent = logData;
+            logsDisplay.textContent = logData || "No hay logs para mostrar.";
             logsDisplay.style.display = 'block';
-            showAdminMessage('Logs cargados.', 'success');
         } catch (error) {
             showAdminMessage(`Error cargando logs: ${error.message}`, 'error');
+            logsDisplay.textContent = "Error al cargar logs.";
+            logsDisplay.style.display = 'block';
         }
     });
 
@@ -419,14 +412,13 @@
       if (!confirm('¿Seguro que deseas limpiar los logs? Esta acción es irreversible.')) return;
       try {
         await fetchWithAuth('http://localhost:3001/admin/limpiar_logs', { method: 'POST' });
-        logsDisplay.textContent = '';
+        logsDisplay.textContent = 'Logs limpiados.';
         showAdminMessage('Logs limpiados.', 'success');
       } catch (error) {
         showAdminMessage(`Error al limpiar logs: ${error.message}`, 'error');
       }
     });
 
-    // Password Reset Modal
     const modalBackdrop = document.getElementById('modal-reset-backdrop');
     const resetPassInput = document.getElementById('reset-pass-input');
     const resetPassConfirmInput = document.getElementById('reset-pass-confirm');
@@ -437,15 +429,17 @@
       currentResetUserId = userId;
       resetPassInput.value = '';
       resetPassConfirmInput.value = '';
-      resetPassMsg.textContent = `Reseteando contraseña para: ${username}`;
+      resetPassMsg.textContent = `Reseteando contraseña para el usuario: ${username}`;
+      resetPassMsg.style.color = 'var(--primary-text)'; // Neutral color initially
       modalBackdrop.classList.add('active');
+      resetPassInput.focus();
     }
 
     document.getElementById('reset-pass-cancel-btn').addEventListener('click', () => {
       modalBackdrop.classList.remove('active');
     });
 
-    modalBackdrop.addEventListener('click', (event) => { // Close on backdrop click
+    modalBackdrop.addEventListener('click', (event) => {
         if (event.target === modalBackdrop) {
             modalBackdrop.classList.remove('active');
         }
@@ -454,6 +448,7 @@
     document.getElementById('reset-pass-confirm-btn').addEventListener('click', async function() {
       const newPassword = resetPassInput.value;
       const confirmPassword = resetPassConfirmInput.value;
+      resetPassMsg.style.color = 'var(--accent-color)'; // Default to error color for messages
 
       if (!newPassword || !confirmPassword) {
         resetPassMsg.textContent = 'Ambos campos de contraseña son requeridos.';
@@ -464,11 +459,13 @@
         return;
       }
       if (!validarSeguridad(newPassword)) {
-        resetPassMsg.textContent = 'Mín. 8 caracteres, una mayúscula, un número y un símbolo.';
+        resetPassMsg.textContent = 'Contraseña no segura: Mín. 8 caracteres, una mayúscula, un número y un símbolo.';
         return;
       }
 
       this.disabled = true;
+      this.querySelector('.material-icons') ? this.querySelector('.material-icons').textContent = 'hourglass_empty' : this.textContent = 'Procesando...';
+
       try {
         await fetchWithAuth('http://localhost:3001/admin/reset_password', {
           method: 'POST',
@@ -478,9 +475,9 @@
         modalBackdrop.classList.remove('active');
       } catch (error) {
         resetPassMsg.textContent = `Error: ${error.message}`;
-        showAdminMessage(`Error al resetear contraseña: ${error.message}`, 'error');
       } finally {
         this.disabled = false;
+        this.querySelector('.material-icons') ? this.querySelector('.material-icons').textContent = 'lock_reset' : this.textContent = 'Resetear';
       }
     });
 
@@ -488,27 +485,23 @@
       return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
     }
 
-    // Dashboard Stats
     async function loadDashboardStats() {
-        const statsContainer = document.getElementById('dashboard-stats');
+        const statsContainer = document.getElementById('dashboard-stats-container');
         try {
-            const stats = await fetchWithAuth('http://localhost:3001/admin/favoritos_total'); // Example stat
-            statsContainer.innerHTML = `<p>Total de Favoritos (Películas + Series): <strong>${stats.total !== undefined ? stats.total : 'N/A'}</strong></p>`;
-            // Add more stats here if available
+            const stats = await fetchWithAuth('http://localhost:3001/admin/favoritos_total');
+            statsContainer.innerHTML = `<div class="dashboard-stats-item">Total de Favoritos (Películas + Series): <strong>${stats.total !== undefined ? stats.total : 'N/A'}</strong></div>`;
         } catch (error) {
-            statsContainer.innerHTML = `<p style="color: var(--accent-color);">Error cargando estadísticas: ${error.message}</p>`;
+            statsContainer.innerHTML = `<p class="status-message error">Error cargando estadísticas: ${error.message}</p>`;
         }
     }
 
-    // Initial data load
     document.addEventListener('DOMContentLoaded', () => {
         cargarUsuarios();
         loadDashboardStats();
-        // PWA manifest link (already in original script, kept for completeness if needed)
         if (!document.querySelector('link[rel="manifest"]')) {
           const link = document.createElement('link');
           link.rel = 'manifest';
-          link.href = 'manifest.json'; // Ensure manifest.json is correctly configured
+          link.href = 'manifest.json';
           document.head.appendChild(link);
         }
     });

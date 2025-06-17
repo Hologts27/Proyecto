@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TODO | Catálogo</title>
+  <title>Lista de Tareas | Catálogo</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="var(--primary-bg)">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -14,45 +17,480 @@
     }
   </script>
   <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      min-height: 100vh;
+    /* Body is styled by global style.css */
+    /* .page-container will provide max-width and centering */
+
+    .todo-card { /* This replaces the old .main-container specific styling */
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      margin-top: 2rem; /* Space from subheader */
+      margin-bottom: 2rem; /* Space before footer */
+    }
+
+    .todo-card h1 { /* Already styled by global H1, but can be fine-tuned if needed */
+      text-align: center;
+      color: var(--accent-color);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Form elements will largely inherit from style.css */
+    #addTaskForm {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #addTaskForm label { /* Styles for labels if needed beyond global */
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    /* input[type="text"], textarea, and button will use global styles */
+    /* #addTaskBtn will use .btn from global */
+
+    #taskList {
+      list-style: none;
+      padding: 0;
+    }
+    #taskList li {
+      background-color: var(--input-bg); /* Darker background for items */
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    #taskList li:hover {
+        border-color: var(--accent-color);
+    }
+
+    #taskList li .task-details {
+      flex-grow: 1;
+      margin-right: 1rem;
+    }
+    #taskList li .task-title {
+      font-size: 1.1rem;
+      color: var(--heading-text);
+      font-weight: 500;
+    }
+    #taskList li .task-description {
+      font-size: 0.9rem;
+      color: var(--primary-text);
+      margin-top: 0.25rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    #taskList li .task-actions {
       display: flex;
       align-items: center;
-      justify-content: center;
+      flex-shrink: 0;
     }
-    .container {
-      background: #1e1e1e;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.8);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
+    #taskList li .complete-checkbox { /* Checkbox styling */
+      margin-right: 0.75rem;
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent-color);
     }
-    /* Animaciones suaves para futuras acciones */
-    .fade-in {
-      animation: fadeIn 0.3s;
+    #taskList li .delete-btn { /* Delete button specific style, uses .btn classes */
+      padding: 0.3rem 0.6rem; /* Smaller padding */
+      font-size: 0.8rem;
+      background-color: var(--muted-text); /* More subtle delete */
     }
-    .fade-out {
-      animation: fadeOut 0.3s forwards;
+    #taskList li .delete-btn:hover {
+      background-color: var(--accent-color); /* Red on hover */
+      color: var(--button-text-color);
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    #taskList li.completed {
+      background-color: rgba(var(--input-bg-rgb, 44,44,44), 0.5); /* Use RGB for opacity or a darker var */
+      border-color: rgba(var(--border-color-rgb, 51,51,51), 0.5);
     }
-    @keyframes fadeOut {
-      to { opacity: 0; pointer-events: none; }
+    #taskList li.completed .task-title {
+      text-decoration: line-through;
+      color: var(--muted-text);
     }
+    #taskList li.completed .task-description {
+      color: var(--muted-text);
+      opacity: 0.7;
+    }
+
+    /* Error message styling is global via .error-message in style.css */
+    /* .no-tasks-message styling is global via .no-tasks-message in style.css */
+
   </style>
 </head>
 <body>
-  <div class="container fade-in">
-    <h1>TODO</h1>
-    <p>Página en construcción.</p>
-  </div>
+
+  <header class="page-subheader">
+    <div class="page-container">
+      <h1><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">list_alt</i>Lista de Tareas</h1>
+      <nav>
+        <a href="dash.html" class="btn btn-secondary">Volver al Hub</a>
+        <button id="logout-btn" class="btn btn-secondary" style="margin-left: 0.5rem;">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <div class="todo-card"> <!-- Renamed .main-container to .todo-card for specificity -->
+      <h1><i class="material-icons" style="vertical-align: middle; margin-right: 8px;">checklist</i>Mis Tareas</h1>
+
+      <form id="addTaskForm">
+        <div class="form-group"> <!-- Added form-group for consistency -->
+          <label for="taskTitleInput">Título de la Tarea:</label>
+          <input type="text" id="taskTitleInput" required placeholder="Ej: Comprar leche">
+        </div>
+        <div class="form-group">
+          <label for="taskDescriptionInput">Descripción (Opcional):</label>
+          <textarea id="taskDescriptionInput" placeholder="Ej: Recordar comprar leche deslactosada..."></textarea>
+        </div>
+        <button type="submit" id="addTaskBtn" class="btn btn-primary">
+            <i class="material-icons" style="vertical-align: middle; margin-right: 4px;">add_circle_outline</i>Añadir Tarea
+        </button>
+      </form>
+
+      <ul id="taskList">
+        <li style="display: none;" class="task-item-template" id="taskItemTemplate">
+          <div class="task-details">
+            <span class="task-title">Sample Task Title</span>
+            <p class="task-description">This is a sample task description.</p>
+          </div>
+          <div class="task-actions">
+            <input type="checkbox" class="complete-checkbox" aria-label="Mark task as complete">
+            <button class="btn delete-btn"><i class="material-icons">delete</i></button>
+          </div>
+        </li>
+        <!-- Task items will be added here by JavaScript -->
+      </ul>
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <div class="page-container">
+      <p>© 2024 Catálogo App. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // JavaScript from previous steps for todo.html ( 그대로 유지 )
+    // This script should already handle fetching, adding, updating, and deleting tasks.
+    // Ensure it correctly targets elements if IDs/classes were changed slightly during this structural update.
+    // Specifically, the main container for tasks is still #taskList.
+    // The form and input IDs are #addTaskForm, #taskTitleInput, #taskDescriptionInput.
+    // The error message div is #errorMessage.
+    // Buttons inside list items use .complete-checkbox and .delete-btn.
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loggedInUserString = localStorage.getItem('loggedInUser');
+      let userId = null;
+
+      if (loggedInUserString) {
+        try {
+          const loggedInUser = JSON.parse(loggedInUserString);
+          if (loggedInUser && loggedInUser.id) {
+            userId = loggedInUser.id;
+          }
+        } catch (e) {
+          console.error('Error parsing loggedInUser from localStorage:', e);
+        }
+      }
+
+      const errorMessageDiv = document.getElementById('errorMessage');
+
+      function displayError(message) {
+        if(errorMessageDiv) {
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.style.display = message ? 'block' : 'none';
+        } else {
+            console.error("errorMessageDiv not found, cannot display:", message);
+        }
+      }
+
+      function clearError() {
+        if(errorMessageDiv) {
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.style.display = 'none';
+        }
+      }
+
+      const logoutBtn = document.getElementById('logout-btn');
+      if(logoutBtn && typeof logoutAdmin !== 'function'){ // Check if a specific admin logout isn't defined
+          logoutBtn.addEventListener('click', async () => {
+            if (confirm("¿Seguro que quieres cerrar sesión?")) {
+                const token = localStorage.getItem('jwt');
+                if (token) {
+                    try {
+                        await fetch('http://localhost:3001/logout', {
+                            method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    } catch (e) { console.warn('Logout API call failed', e); }
+                }
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('jwt');
+                localStorage.removeItem('adminToken');
+                window.location.href = 'index.html';
+            }
+        });
+      }
+
+
+      if (!userId) {
+        console.error('User ID not found. Redirecting to login.');
+        displayError('Error: User not logged in. Please login to view your tasks.');
+        // Make sure form is disabled or hidden too
+        const form = document.getElementById('addTaskForm');
+        if(form) form.style.display = 'none';
+        return;
+      }
+
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        console.error('JWT token not found. Redirecting to login.');
+        displayError('Error: Authentication token not found. Please login again.');
+        const form = document.getElementById('addTaskForm');
+        if(form) form.style.display = 'none';
+        return;
+      }
+
+      const taskListUL = document.getElementById('taskList');
+      const taskItemTemplate = document.getElementById('taskItemTemplate');
+      const addTaskForm = document.getElementById('addTaskForm');
+      const taskTitleInput = document.getElementById('taskTitleInput');
+      const taskDescriptionInput = document.getElementById('taskDescriptionInput');
+
+      function displayNoTasksMessage() {
+        removeNoTasksMessage(); // Clear previous message first
+        if (taskListUL.children.length === 1 && taskListUL.firstChild.id === 'taskItemTemplate') { // Only template is present
+            const noTasksMessageP = document.createElement('p');
+            noTasksMessageP.textContent = 'No tasks found. Add some!';
+            noTasksMessageP.className = 'text-muted'; // Use global class
+            noTasksMessageP.style.textAlign = 'center';
+            noTasksMessageP.style.padding = '1rem';
+            taskListUL.appendChild(noTasksMessageP);
+        }
+      }
+
+      function removeNoTasksMessage() {
+        const existingMsg = taskListUL.querySelector('.text-muted[style*="text-align:center"]');
+        if (existingMsg && existingMsg.textContent.startsWith('No tasks found')) {
+            existingMsg.remove();
+        }
+      }
+
+      async function fetchAndDisplayTasks(currentUserId) {
+        try {
+          const response = await fetch(`/todo?user_id=${currentUserId}`, { // Endpoint from api.js
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          // Clear list before rendering, but keep the template
+          while (taskListUL.firstChild && taskListUL.firstChild.id !== 'taskItemTemplate') {
+            taskListUL.removeChild(taskListUL.firstChild);
+          }
+          // Ensure template is hidden
+          if (taskItemTemplate) taskItemTemplate.style.display = 'none';
+
+
+          if (response.ok) {
+            const tasks = await response.json();
+            clearError();
+
+            if (!taskItemTemplate) {
+                console.error('Task item template not found!');
+                displayError('Error: Page setup incomplete. Cannot display tasks.');
+                return;
+            }
+
+            if (tasks.length === 0) {
+                displayNoTasksMessage();
+            } else {
+                removeNoTasksMessage();
+                tasks.forEach(task => {
+                  const listItem = taskItemTemplate.cloneNode(true);
+                  listItem.removeAttribute('id');
+                  listItem.style.display = 'flex';
+                  listItem.dataset.id = task.id;
+
+                  const titleSpan = listItem.querySelector('.task-title');
+                  const descriptionP = listItem.querySelector('.task-description');
+                  const checkbox = listItem.querySelector('.complete-checkbox');
+
+                  if (titleSpan) titleSpan.textContent = task.titulo;
+                  if (descriptionP) {
+                    descriptionP.textContent = task.descripcion || '';
+                    if (!task.descripcion) {
+                        descriptionP.style.display = 'none';
+                    } else {
+                        descriptionP.style.display = 'block';
+                    }
+                  }
+                  if (checkbox) checkbox.checked = !!task.completado;
+
+                  if (task.completado) {
+                    listItem.classList.add('completed');
+                  } else {
+                    listItem.classList.remove('completed');
+                  }
+
+                  taskListUL.appendChild(listItem);
+                });
+            }
+          } else {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to fetch tasks and parse error.' }));
+            console.error('Failed to fetch tasks:', response.status, errorData.error);
+            displayError(`Error fetching tasks: ${errorData.error || response.statusText}`);
+          }
+        } catch (error) {
+          console.error('Error during fetchAndDisplayTasks:', error);
+          displayError('An unexpected error occurred while fetching tasks.');
+        }
+      }
+
+      if (addTaskForm) {
+        addTaskForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          clearError();
+
+          const taskTitle = taskTitleInput.value.trim();
+          const taskDescription = taskDescriptionInput.value.trim();
+
+          if (!userId || !token) { // Should have already been checked
+            displayError('Authentication error. Please log in again.');
+            return;
+          }
+
+          if (!taskTitle) {
+            displayError('Task title cannot be empty.');
+            return;
+          }
+
+          const taskObject = {
+            user_id: userId,
+            titulo: taskTitle,
+            descripcion: taskDescription
+          };
+
+          try {
+            const response = await fetch('/todo', { // Endpoint from api.js
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(taskObject)
+            });
+
+            if (response.ok) {
+              taskTitleInput.value = '';
+              taskDescriptionInput.value = '';
+              fetchAndDisplayTasks(userId);
+            } else {
+              const errorData = await response.json().catch(() => ({ error: 'Failed to add task and parse error response.' }));
+              console.error('Failed to add task:', response.status, errorData.error);
+              displayError(`Error adding task: ${errorData.error || response.statusText}`);
+            }
+          } catch (error) {
+            console.error('Error during addTask:', error);
+            displayError('An unexpected error occurred while adding the task.');
+          }
+        });
+      } else {
+        console.error('Add task form not found!');
+      }
+
+      if (taskListUL) {
+        taskListUL.addEventListener('change', async (event) => {
+          if (event.target.classList.contains('complete-checkbox')) {
+            clearError();
+            const checkbox = event.target;
+            const listItem = checkbox.closest('li');
+            const taskId = listItem.dataset.id;
+            const newCompletionStatus = checkbox.checked;
+
+            if (!userId || !token) { /* Redundant check, but safe */ return; }
+            if (!taskId) { return; }
+
+            const currentTitleElem = listItem.querySelector('.task-title');
+            const currentDescriptionElem = listItem.querySelector('.task-description');
+
+            const taskUpdateObject = {
+              titulo: currentTitleElem ? currentTitleElem.textContent : '',
+              descripcion: currentDescriptionElem ? currentDescriptionElem.textContent : '',
+              completado: newCompletionStatus
+            };
+
+            try {
+              const response = await fetch(`/todo/${taskId}`, { // Endpoint from api.js
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(taskUpdateObject)
+              });
+
+              if (response.ok) {
+                listItem.classList.toggle('completed', newCompletionStatus);
+              } else {
+                const errorData = await response.json().catch(() => ({ error: 'Failed to update task and parse error response.' }));
+                displayError(`Error updating task: ${errorData.error || response.statusText}`);
+                checkbox.checked = !newCompletionStatus;
+              }
+            } catch (error) {
+              displayError('An unexpected error occurred while updating the task.');
+              checkbox.checked = !newCompletionStatus;
+            }
+          }
+        });
+
+        taskListUL.addEventListener('click', async (event) => {
+          const deleteButton = event.target.closest('.delete-btn');
+          if (deleteButton) {
+            clearError();
+            const listItem = deleteButton.closest('li');
+            const taskId = listItem.dataset.id;
+
+            if (!userId || !token) { /* Redundant */ return; }
+            if (!taskId) { return; }
+
+            if (!confirm('Are you sure you want to delete this task?')) {
+              return;
+            }
+
+            try {
+              const response = await fetch(`/todo/${taskId}`, { // Endpoint from api.js
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+
+              if (response.ok) {
+                listItem.style.opacity = '0';
+                setTimeout(() => {
+                    listItem.remove();
+                    displayNoTasksMessage(); // Check if list is empty
+                }, 300);
+              } else {
+                const errorData = await response.json().catch(() => ({ error: 'Failed to delete task and parse error response.' }));
+                displayError(`Error deleting task: ${errorData.error || response.statusText}`);
+              }
+            } catch (error) {
+              displayError('An unexpected error occurred while deleting the task.');
+            }
+          }
+        });
+      }
+      fetchAndDisplayTasks(userId);
+    });
+  </script>
 </body>
 </html>

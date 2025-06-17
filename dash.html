@@ -6,207 +6,160 @@
   <title>Hub - Catálogo de Películas y Series</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json">
-  <style>
-    body {
-      background-color: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-    }
-    header {
-      text-align: center;
-      padding: 20px 10px;
-      background-color: #1c1c1c;
-      color: #e50914;
-      font-weight: bold;
-      font-size: 1.8rem;
-    }
-    main {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: #1c1c1c;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
-      text-align: center;
-    }
-    main h2 {
-      margin-bottom: 30px;
-      color: #e50914;
-    }
-    main button, main a.button-link {
-      display: block;
-      width: 100%;
-      max-width: 300px;
-      margin: 10px auto;
-      padding: 12px 0;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #fff;
-      background-color: #e50914;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-    }
-    main button:hover, main a.button-link:hover {
-      background-color: #b20710;
-    }
-    footer {
-      text-align: center;
-      padding: 20px 10px;
-      background-color: #1c1c1c;
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 80px;
-    }
-    /* Toast notification styles */
-    #toast-container {
-      position: fixed;
-      top: 30px;
-      right: 30px;
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      pointer-events: none;
-    }
-    .toast {
-      min-width: 220px;
-      max-width: 350px;
-      background: #232323;
-      color: #fff;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      box-shadow: 0 2px 12px rgba(229,9,20,0.18);
-      opacity: 0.97;
-      pointer-events: auto;
-      transition: opacity 0.3s, transform 0.3s;
-      animation: toastIn 0.3s;
-    }
-    .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
-    .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
-    .toast-info { background: linear-gradient(90deg, #232526 0%, #414345 100%); color: #fff; }
-    .toast.hide {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.98);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(-20px) scale(0.98); }
-      to { opacity: 0.97; transform: none; }
-    }
-    /* Animaciones para favoritos y modales */
-    @keyframes favAdd {
-      from { background: #43e97b33; }
-      to { background: none; }
-    }
-    @keyframes favRemove {
-      from { opacity: 1; transform: scale(1); }
-      to { opacity: 0; transform: scale(0.95); }
-    }
-    .fav-added {
-      animation: favAdd 0.6s;
-    }
-    .fav-removed {
-      animation: favRemove 0.4s forwards;
-    }
-    .modal-fade {
-      opacity: 0;
-      transform: scale(0.98) translateY(30px);
-      transition: opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1);
-      pointer-events: none;
-    }
-    .modal-fade.active {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-      pointer-events: auto;
-    }
-  </style>
+  <meta name="theme-color" content="var(--primary-bg)">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Inline styles removed, relying on style.css and classes like .page-subheader, .page-container, .dash-nav-grid, .dash-nav-item -->
   <script>
+    // Service worker registration
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      window.addEventListener('load', () => { // Changed from just navigator.serviceWorker.register
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('Service Worker registration failed:', err));
+      });
     }
   </script>
 </head>
 <body>
 
-  <header>
-    <h1>🎬 Catálogo de Películas y Series</h1>
+  <header class="page-subheader">
+    <div class="page-container">
+        <h1><i class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 2.2rem;">dashboard</i>Dashboard</h1>
+        <button id="logoutButton" class="btn btn-secondary">
+            <i class="material-icons" style="vertical-align: middle; margin-right: 4px;">logout</i>Cerrar Sesión
+        </button>
+    </div>
   </header>
 
-  <main>
-    <h2>Bienvenido, <span id="usuario-nombre"></span></h2>
-  
-    <a href="peliculas.html" class="button-link">Películas</a>
-    <a href="series.html" class="button-link">Series</a>
-    <a href="favoritos.html" class="button-link">Favoritos</a>
-    <a href="guardados.html" class="button-link">Guardados</a> <!-- NUEVO BOTÓN -->
-    <a href="manage.html" class="button-link">Gestionar cuenta</a> <!-- NUEVO BOTÓN -->
-    
-    <button id="logout-btn">Cerrar sesión</button>
-  </main>
-  
-  <!-- Toast notification container -->
-  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  <main class="page-container" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <h2 id="welcomeMessage" style="text-align: center; margin-bottom: 2.5rem; color: var(--heading-text);">
+      Bienvenido, <span id="usuario-nombre" style="color: var(--accent-color); font-weight: bold;"></span>
+    </h2>
 
-  <footer>
-    © 2025 Catálogo Cine & Series. Todos los derechos reservados.
+    <nav class="dash-nav-grid">
+      <a href="peliculas.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">movie</i>
+        <h3>Películas</h3>
+        <p>Explora el catálogo de películas.</p>
+      </a>
+      <a href="series.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">tv</i>
+        <h3>Series</h3>
+        <p>Descubre nuevas series.</p>
+      </a>
+      <a href="favoritos.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">favorite</i>
+        <h3>Favoritos</h3>
+        <p>Accede a tus títulos preferidos.</p>
+      </a>
+      <a href="guardados.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">bookmark</i>
+        <h3>Guardados</h3>
+        <p>Ve tu lista de "ver más tarde".</p>
+      </a>
+       <a href="todo.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">list_alt</i>
+        <h3>To-Do List</h3>
+        <p>Organiza tus tareas pendientes.</p>
+      </a>
+      <a href="manage.html" class="dash-nav-item">
+        <i class="material-icons dash-nav-icon">manage_accounts</i>
+        <h3>Gestionar Cuenta</h3>
+        <p>Actualiza tu perfil y contraseña.</p>
+      </a>
+      <!-- Admin link container - JS will handle display -->
+      <div id="admin-link-container" class="dash-nav-item-wrapper" style="display: none;">
+        <a href="admin.html" class="dash-nav-item">
+          <i class="material-icons dash-nav-icon">admin_panel_settings</i>
+          <h3>Panel Admin</h3>
+          <p>Gestionar usuarios y sistema.</p>
+        </a>
+      </div>
+    </nav>
+  </main>
+
+  <footer class="page-footer">
+    <div class="page-container">
+      <p>© 2024 Catálogo App. Todos los derechos reservados.</p>
+    </div>
   </footer>
 
+  <!-- Toast container is styled globally by style.css if #toast-container is used by JS -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
   <script>
-    // Verificar usuario
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    const token = localStorage.getItem("jwt");
+
+    // User verification and welcome message
     if (!loggedInUser || !loggedInUser.username) {
       window.location.href = "index.html";
     } else {
-      document.getElementById('usuario-nombre').textContent = loggedInUser.username;
+      const userNameSpan = document.getElementById('usuario-nombre');
+      if(userNameSpan) userNameSpan.textContent = loggedInUser.username;
     }
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      const confirmLogout = confirm("¿Seguro que quieres cerrar sesión?");
-      if (confirmLogout) {
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "index.html";
-      }
-    });
+    // Admin link visibility
+    if (loggedInUser && loggedInUser.role === 'admin') {
+      const adminLinkContainer = document.getElementById('admin-link-container');
+      if(adminLinkContainer) adminLinkContainer.style.display = 'block';
+    }
 
-    // Toast notification system
+    // Logout functionality
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async () => {
+          const confirmLogout = confirm("¿Seguro que quieres cerrar sesión?");
+          if (confirmLogout) {
+            if (token) {
+                try {
+                    const response = await fetch('http://localhost:3001/logout', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        console.warn('Logout API call failed, proceeding with client-side logout.');
+                    }
+                } catch (error) {
+                    console.warn('Error calling logout API:', error, 'Proceeding with client-side logout.');
+                }
+            }
+            localStorage.removeItem("loggedInUser");
+            localStorage.removeItem("jwt");
+            localStorage.removeItem("adminToken"); // Important for admin users
+            window.location.href = "index.html";
+          }
+        });
+    } else {
+        console.error("Logout button not found.");
+    }
+
+    // Toast notification system (if needed on this page, otherwise can be removed)
+    // Ensure #toast-container div exists if using toasts here.
     function showToast(message, type = 'info', duration = 3500) {
       const container = document.getElementById('toast-container');
+      if (!container) { // Create container if it doesn't exist
+          const newContainer = document.createElement('div');
+          newContainer.id = 'toast-container';
+          document.body.appendChild(newContainer);
+          container = newContainer;
+      }
       const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
+      toast.className = `toast ${type}`; // These classes should be in style.css
       toast.textContent = message;
       container.appendChild(toast);
+
+      // Animation is handled by CSS, remove JS animation for opacity/transform
       setTimeout(() => {
-        toast.classList.add('hide');
-        toast.addEventListener('transitionend', () => toast.remove());
+          toast.style.animation = 'fadeOutToast 0.4s forwards'; // Use CSS animation for fade out
+          toast.addEventListener('animationend', (e) => {
+              if(e.animationName === 'fadeOutToast') { // Check if it's the correct animation
+                toast.remove();
+              }
+          }, { once: true }); // Ensure listener is removed after execution
       }, duration);
     }
 
-    // Safe fetch wrapper for error handling
-    async function safeFetch(url, options = {}) {
-      try {
-        const res = await fetch(url, options);
-        if (!res.ok) {
-          let errMsg = `Error ${res.status}`;
-          try {
-            const data = await res.json();
-            errMsg = data.error || errMsg;
-          } catch {}
-          throw new Error(errMsg);
-        }
-        return await res.json();
-      } catch (err) {
-        showToast(err.message || 'Error de conexión con el servidor.', 'error');
-        throw err;
-      }
-    }
-
-    // Ejemplo de uso en agregar/eliminar favoritos:
-    // Reemplaza fetch por safeFetch y muestra showToast en éxito/error
+    // Safe fetch wrapper (if needed on this page, otherwise can be removed)
+    // async function safeFetch(url, options = {}) { ... } // Defined in other files, can be global if needed
   </script>
 
 </body>

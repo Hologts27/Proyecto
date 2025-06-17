@@ -4,162 +4,162 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Iniciar Sesión | Catálogo de Películas y Series</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="var(--primary-bg)">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    /* Specific styles for login/register page structure */
+    body.form-page-body {
+      display: flex;
+      flex-direction: column; /* Allow header/footer and centered form */
+      align-items: center;
+      justify-content: center; /* Center form card vertically */
+      min-height: 100vh;
+      padding: 20px; /* Padding for smaller viewports */
+      font-family: var(--font-family, 'Inter', sans-serif);
+      background-color: var(--primary-bg);
+    }
+
+    .form-card {
+      background-color: var(--card-bg);
+      padding: var(--card-padding-y) var(--card-padding-x);
+      border-radius: var(--border-radius, 8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid var(--border-color);
+      margin-top: 2rem; /* Space from header */
+      margin-bottom: 2rem; /* Space before footer */
+    }
+
+    .form-card h1 {
+      text-align: center;
+      color: var(--heading-text);
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label { /* Label styling from global styles will be inherited or can be specified here */
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--primary-text);
+    }
+
+    .form-card .btn { /* Ensure button is full width */
+        width: 100%;
+        padding-top: 0.85rem;
+        padding-bottom: 0.85rem;
+        font-size: 1.05rem;
+        margin-top: 0.5rem; /* Space above button */
+    }
+    .form-card .btn .material-icons {
+        font-size: 1.3em; /* Slightly larger icon for main action button */
+    }
+
+    .form-link-container {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .form-link-container p { /* To style the paragraph holding the link */
+        font-size: 0.9rem;
+        color: var(--primary-text); /* Or --muted-text */
+    }
+    /* Link 'a' tag styling comes from global style.css */
+
+    /* .status-message styling comes from global style.css */
+  </style>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('SW reg failed: ', err));
       });
     }
   </script>
-  <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .container {
-      background-color: #1e1e1e;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #e50914;
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 6px;
-      background-color: #333;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background-color: #e50914;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn:hover {
-      background-color: #b20710;
-    }
-
-    #message {
-      margin-top: 15px;
-      font-weight: bold;
-      min-height: 24px;
-      color: #ff4444;
-    }
-
-    /* Toast notification styles */
-    #toast-container {
-      position: fixed;
-      top: 30px;
-      right: 30px;
-      z-index: 99999;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      pointer-events: none;
-    }
-    .toast {
-      min-width: 220px;
-      max-width: 350px;
-      background: #232323;
-      color: #fff;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      box-shadow: 0 2px 12px rgba(229,9,20,0.18);
-      opacity: 0.97;
-      pointer-events: auto;
-      transition: opacity 0.3s, transform 0.3s;
-      animation: toastIn 0.3s, toastOut 0.3s 2.7s;
-    }
-    .toast-success { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #222; }
-    .toast-error { background: linear-gradient(90deg, #e50914 60%, #b20710 100%); color: #fff; }
-    .toast-info { background: linear-gradient(90deg, #232526 0%, #414345 100%); color: #fff; }
-    .toast.hide {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.98);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(-20px) scale(0.98); }
-      to { opacity: 0.97; transform: none; }
-    }
-    @keyframes toastOut {
-      to { opacity: 0; transform: translateY(-20px) scale(0.98); }
-    }
-  </style>
 </head>
-<body>
+<body class="form-page-body">
 
-  <div class="container">
-    <h1>Iniciar Sesión</h1>
+  <!-- Header would go here if it were part of these pages, but login/register are typically standalone -->
 
-    <input type="text" id="username" placeholder="Usuario" autocomplete="username" />
-    <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" />
-    
-    <button class="btn" onclick="login()">Entrar</button>
+  <div class="form-card">
+    <h1><i class="material-icons" style="font-size: 2.5rem; vertical-align: bottom; margin-right: 0.2em;">login</i>Iniciar Sesión</h1>
 
-    <div id="message"></div>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" placeholder="Tu nombre de usuario" autocomplete="username" required />
+        </div>
 
-    <p style="margin-top: 20px; color: #ccc;">
-      ¿No tienes cuenta? <a href="register.html" style="color:#e50914; text-decoration:none;">Regístrate aquí</a>
-    </p>
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password" required />
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="login()">
+            <i class="material-icons">input</i>Entrar
+        </button>
+
+        <div id="message" class="status-message" role="alert" aria-live="assertive"></div>
+    </form>
+
+    <div class="form-link-container">
+      <p>¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
+    </div>
   </div>
 
-  <!-- Toast notification container -->
-  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  <footer class="page-footer" style="margin-top: auto;"> <!-- Push footer to bottom -->
+    <div class="page-container">
+      <p>&copy; 2024 Catálogo App. Todos los derechos reservados.</p>
+    </div>
+  </footer>
 
   <script>
-    // Si ya está logeado, redirigir a dash.html
     if(localStorage.getItem("loggedInUser")) {
       window.location.href = "dash.html";
     }
 
+    const messageDiv = document.getElementById("message");
+
+    function displayMessage(msg, type = 'error') { // Default to error for login page
+        if (messageDiv) {
+            messageDiv.textContent = msg;
+            // JS explicitly sets class for error/success
+            messageDiv.className = 'status-message ' + type; // type can be 'error' or 'success'
+        } else {
+            console.error("Message div not found, cannot display:", msg);
+        }
+    }
+
     function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const message = document.getElementById("message");
-      message.style.color = "#ff4444";
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      displayMessage('', 'error'); // Clear previous messages by setting empty text
 
       if (!username) {
-        message.textContent = "Por favor, ingresa tu usuario.";
+        displayMessage("Por favor, ingresa tu usuario.", 'error');
+        usernameInput.focus();
         return;
       }
       if (!password) {
-        message.textContent = "Por favor, ingresa tu contraseña.";
+        displayMessage("Por favor, ingresa tu contraseña.", 'error');
+        passwordInput.focus();
         return;
       }
+
+      const loginButton = document.querySelector('#loginForm button');
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<i class="material-icons">hourglass_empty</i>Procesando...';
+
 
       fetch('http://localhost:3001/login', {
         method: 'POST',
@@ -169,11 +169,8 @@
       .then(res => res.json())
       .then(data => {
         if (data.ok && data.user) {
-          // Guardar usuario logeado (guardar id y username)
           localStorage.setItem("loggedInUser", JSON.stringify(data.user));
-          // Guardar JWT SIEMPRE para rutas protegidas
           localStorage.setItem("jwt", data.token);
-          // Guardar token para admin.html si es admin
           if (data.user.role === 'admin') {
             localStorage.setItem("adminToken", data.token);
           } else {
@@ -181,48 +178,18 @@
           }
           window.location.href = "dash.html";
         } else {
-          message.textContent = data.error || "Error de autenticación.";
+          displayMessage(data.error || "Error de autenticación. Verifica tus credenciales.", 'error');
+          loginButton.disabled = false;
+          loginButton.innerHTML = '<i class="material-icons">input</i>Entrar';
         }
       })
-      .catch(() => {
-        message.textContent = "Error de conexión con el servidor.";
+      .catch((err) => {
+        console.error("Login fetch error:", err);
+        displayMessage("Error de conexión con el servidor. Intenta más tarde.", 'error');
+        loginButton.disabled = false;
+        loginButton.innerHTML = '<i class="material-icons">input</i>Entrar';
       });
     }
-
-    // Toast notification system
-    function showToast(message, type = 'info', duration = 3500) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add('hide');
-        toast.addEventListener('transitionend', () => toast.remove());
-      }, duration);
-    }
-
-    // Safe fetch wrapper for error handling
-    async function safeFetch(url, options = {}) {
-      try {
-        const res = await fetch(url, options);
-        if (!res.ok) {
-          let errMsg = `Error ${res.status}`;
-          try {
-            const data = await res.json();
-            errMsg = data.error || errMsg;
-          } catch {}
-          throw new Error(errMsg);
-        }
-        return await res.json();
-      } catch (err) {
-        showToast(err.message || 'Error de conexión con el servidor.', 'error');
-        throw err;
-      }
-    }
-
-    // Ejemplo de uso en logout:
-    // Reemplaza confirm() por un modal o showToast si lo deseas
   </script>
 
 </body>
