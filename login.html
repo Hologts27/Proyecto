@@ -152,12 +152,16 @@
       const message = document.getElementById("message");
       message.style.color = "#ff4444";
 
+      if (!username && !password) {
+        message.textContent = "Por favor, ingresa tu usuario y contraseña.";
+        return;
+      }
       if (!username) {
-        message.textContent = "Por favor, ingresa tu usuario.";
+        message.textContent = "El campo de usuario está vacío.";
         return;
       }
       if (!password) {
-        message.textContent = "Por favor, ingresa tu contraseña.";
+        message.textContent = "El campo de contraseña está vacío.";
         return;
       }
 
@@ -181,7 +185,18 @@
           }
           window.location.href = "dash.html";
         } else {
-          message.textContent = data.error || "Error de autenticación.";
+          // Mensajes custom según error del backend
+          if (data && data.error) {
+            if (data.error.includes('Datos incompletos')) {
+              message.textContent = "Debes completar usuario y contraseña.";
+            } else if (data.error.includes('Usuario o contraseña incorrectos')) {
+              message.textContent = "Usuario o contraseña incorrectos.";
+            } else {
+              message.textContent = data.error;
+            }
+          } else {
+            message.textContent = "Error de autenticación.";
+          }
         }
       })
       .catch(() => {

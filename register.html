@@ -184,12 +184,16 @@
       message.style.color = "#ff4444";
 
       // Validaciones básicas
+      if (!username && !email && !password && !confirmPassword) {
+        message.textContent = "Por favor, completa todos los campos.";
+        return;
+      }
       if (!username) {
-        message.textContent = "Por favor, ingresa un usuario.";
+        message.textContent = "El campo de usuario está vacío.";
         return;
       }
       if (!email) {
-        message.textContent = "Por favor, ingresa un email.";
+        message.textContent = "El campo de email está vacío.";
         return;
       }
       if (!email.match(/^[^\s@]+@gmail\.com$/i)) {
@@ -197,7 +201,11 @@
         return;
       }
       if (!password) {
-        message.textContent = "Por favor, ingresa una contraseña.";
+        message.textContent = "El campo de contraseña está vacío.";
+        return;
+      }
+      if (!confirmPassword) {
+        message.textContent = "Debes confirmar la contraseña.";
         return;
       }
       if (password.length < 8) {
@@ -234,7 +242,20 @@
             window.location.href = "login.html";
           }, 2000);
         } else {
-          message.textContent = data.error || "Error en el registro.";
+          // Mensajes custom para usuario/email ocupados
+          if (data && data.error) {
+            if (data.error.toLowerCase().includes('usuario') && data.error.toLowerCase().includes('ocupado')) {
+              message.textContent = "El nombre de usuario ya está en uso.";
+            } else if (data.error.toLowerCase().includes('email') && data.error.toLowerCase().includes('ocupado')) {
+              message.textContent = "El email ya está registrado.";
+            } else if (data.error.toLowerCase().includes('usuario') && data.error.toLowerCase().includes('email')) {
+              message.textContent = "El usuario o el email ya están registrados.";
+            } else {
+              message.textContent = data.error;
+            }
+          } else {
+            message.textContent = "Error en el registro.";
+          }
         }
       })
       .catch(() => {

@@ -42,7 +42,7 @@ app.use(
 const dbConfig = {
   host: 'localhost',
   user: 'root',
-  password: 'ROOT',
+  password: 'root',
   database: 'CATALOGO'
 };
 
