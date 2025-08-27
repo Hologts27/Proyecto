@@ -241,25 +241,28 @@
           setTimeout(() => {
             window.location.href = "login.html";
           }, 2000);
-        } else {
-          // Mensajes custom para usuario/email ocupados
-          if (data && data.error) {
-            if (data.error.toLowerCase().includes('usuario') && data.error.toLowerCase().includes('ocupado')) {
-              message.textContent = "El nombre de usuario ya está en uso.";
-            } else if (data.error.toLowerCase().includes('email') && data.error.toLowerCase().includes('ocupado')) {
-              message.textContent = "El email ya está registrado.";
-            } else if (data.error.toLowerCase().includes('usuario') && data.error.toLowerCase().includes('email')) {
-              message.textContent = "El usuario o el email ya están registrados.";
-            } else {
-              message.textContent = data.error;
-            }
+        } else if (data && data.error) {
+          // Mensaje específico si usuario o email ya existen
+          if (data.error.toLowerCase().includes('usuario') && data.error.toLowerCase().includes('email')) {
+            message.textContent = "El usuario o el email ya están registrados.";
+          } else if (data.error.toLowerCase().includes('usuario')) {
+            message.textContent = "El nombre de usuario ya está en uso.";
+          } else if (data.error.toLowerCase().includes('email')) {
+            message.textContent = "El email ya está registrado.";
           } else {
-            message.textContent = "Error en el registro.";
+            message.textContent = data.error;
           }
+        } else {
+          message.textContent = "Error en el registro.";
         }
       })
-      .catch(() => {
-        message.textContent = "Error de conexión con el servidor.";
+      .catch((err) => {
+        // Si el error es por usuario/email ya existente, mostrar mensaje específico
+        if (err && err.message && err.message.toLowerCase().includes('usuario o email ya existe')) {
+          message.textContent = "El usuario o el email ya están registrados.";
+        } else {
+          message.textContent = "Error de conexión con el servidor.";
+        }
       });
     }
   </script>
