@@ -1,4 +1,4 @@
-/* Reset básico */
+ 
 * {
     margin: 0;
     padding: 0;
@@ -13,7 +13,7 @@
     padding: 20px;
   }
   
-  /* Encabezado */
+  
   header {
     text-align: center;
     padding: 20px 0;
@@ -22,17 +22,17 @@
   
   header h1 {
     font-size: 2.5rem;
-    color: #e50914; /* Estilo Netflix */
+  color: #e50914; 
   }
   
-  /* Contenedor principal */
+  
   .catalog {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
   }
   
-  /* Tarjeta individual */
+  
   .card {
     background-color: #1c1c1c;
     border-radius: 10px;
@@ -70,7 +70,7 @@
     overflow: hidden;
   }
   
-  /* Filtros o menú superior */
+  
   .filters {
     display: flex;
     justify-content: center;
@@ -96,7 +96,7 @@
     color: #fff;
   }
   
-  /* Pie de página */
+  
   footer {
     text-align: center;
     margin-top: 40px;
@@ -104,7 +104,7 @@
     font-size: 0.8rem;
   }
   
-  /* Responsive ajustes */
+  
   @media (max-width: 600px) {
     .card img {
       height: 250px;
@@ -114,7 +114,7 @@
       height: auto;
     }
   }
-  /* Notificaciones Toast */
+  
 .toast-container {
   position: fixed;
   top: 20px;
@@ -127,7 +127,7 @@
 }
 
 .toast {
-  background-color: #e50914; /* rojo Netflix */
+  background-color: #e50914; 
   color: white;
   padding: 12px 18px;
   border-radius: 8px;
@@ -141,7 +141,7 @@
 }
 
 .toast.success {
-  background-color: #27ae60; /* verde para éxito */
+  background-color: #27ae60; 
   box-shadow: 0 4px 12px rgba(39, 174, 96, 0.7);
 }
 
@@ -159,6 +159,6 @@
   }
 }
 .toast.fail {
-  background-color: #c0392b; /* rojo oscuro para error */
+  background-color: #c0392b; 
   box-shadow: 0 4px 12px rgba(192, 57, 43, 0.7);
 }

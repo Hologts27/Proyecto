@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ver más tarde - Catálogo</title>
+  <title>Ver más tarde - UltraFilm</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <script>
@@ -51,6 +51,14 @@
     }
     nav a:hover {
       background-color: #e50914;
+    }
+    nav a[href="guardados.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
+    }
+    nav a[href="favoritos.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
     }
     .btn-logout {
       background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
@@ -213,10 +221,10 @@
   <main>
     <div id="guardados-container" aria-live="polite" aria-relevant="additions"></div>
   </main>
-  <footer>© 2025 Catálogo Cine & Series. Todos los derechos reservados.</footer>
+  <footer>© 2025 UltraFilm Cine & Series. Todos los derechos reservados.</footer>
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
   <script>
-    // JWT y usuario robusto
+    
     const token = localStorage.getItem('jwt');
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!token) {
@@ -264,7 +272,7 @@
         throw err;
       }
     }
-    // Cargar guardados desde ambas APIs y unirlos
+    
     async function loadGuardados() {
       let guardadosSeries = [];
       let guardadosPeliculas = [];

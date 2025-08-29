@@ -15,7 +15,7 @@ const urlsToCache = [
   'todo.html',
   'style.css',
   'manifest.json',
-  // Puedes agregar más recursos estáticos aquí
+  
 ];
 
 self.addEventListener('install', event => {
@@ -40,7 +40,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Si es válido, actualiza el caché en segundo plano
+        
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, responseClone);
@@ -48,10 +48,10 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // Si falla la red, intenta servir desde caché
+        
         return caches.match(event.request).then(response => {
           if (response) return response;
-          // Si es una navegación HTML, muestra página offline
+          
           if (event.request.headers.get('accept').includes('text/html')) {
             return caches.match(OFFLINE_URL);
           }
@@ -60,4 +60,4 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Página offline básica (si no existe, créala)
+ 

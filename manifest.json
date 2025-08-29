@@ -1,11 +1,11 @@
 {
-  "name": "Panel de Administración Catálogo",
-  "short_name": "AdminCatálogo",
+  "name": "Panel de Administración UltraFilm",
+  "short_name": "AdminUltraFilm",
   "start_url": "/admin.html",
   "display": "standalone",
   "background_color": "#181818",
   "theme_color": "#e50914",
-  "description": "Panel de administración para el catálogo de películas y series.",
+  "description": "Panel de administración para el UltraFilm.",
   "icons": [
     {
       "src": "favicon.ico",

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Series - Catálogo</title>
+  <title>Series - UltraFilm</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <script>
-    // PWA: registrar service worker
+    
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js');
@@ -52,6 +52,10 @@
     }
     nav a:hover {
       background-color: #e50914;
+    }
+    nav a[href="guardados.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
     }
     .btn-logout {
       background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
@@ -135,7 +139,7 @@
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;
-  min-height: calc(3 * 300px); /* 4 filas de altura aproximada */
+  min-height: calc(3 * 300px); 
 }
     .card {
       background-color: #1e1e1e;
@@ -183,7 +187,7 @@
       max-height: 60px;
       text-overflow: ellipsis;
     }
-    /* Botón favorito */
+    
     .fav-btn {
       position: absolute;
       top: 10px;
@@ -209,9 +213,9 @@
       background-color: #b20710;
     }
     .fav-btn.favorited {
-      background-color: #00cc66; /* color verde cuando está en favoritos */
+  background-color: #00cc66; 
     }
-    /* Botón guardar (ver más tarde) */
+    
     .bookmark-btn {
       position: absolute;
       top: 10px;
@@ -250,7 +254,7 @@
       color: #666;
       font-size: 0.9rem;
     }
-    /* Modal estilos (copiados/adaptados de peliculas.html) */
+    
     .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -370,7 +374,7 @@
       .modal-movie-header { flex-direction: column; align-items: center; }
       .modal-movie-poster { width: 90vw; max-width: 220px; }
     }
-    /* Estilos para las notificaciones toast */
+    
 #toast-container {
   position: fixed;
   top: 30px;
@@ -479,26 +483,26 @@
 
     <div id="series-container" aria-live="polite" aria-relevant="additions"></div>
 
-    <!-- Paginación -->
+    
     <div class="pagination">
       <button id="prev-page" disabled>Anterior</button>
       <span id="page-indicator">Página 1</span>
       <button id="next-page">Siguiente</button>
     </div>
-    <!-- Modal Detalle Serie -->
+    
     <div id="serie-modal" class="modal" style="display:none;">
       <div class="modal-content" tabindex="0">
         <button class="modal-close" id="serie-modal-close-btn" aria-label="Cerrar modal">&times;</button>
         <div id="serie-modal-body">
-          <!-- Contenido dinámico -->
+          
         </div>
       </div>
     </div>
   </main>
 
-  <footer>© 2025 Catálogo Cine & Series. Todos los derechos reservados.</footer>
+  <footer>© 2025 UltraFilm Cine & Series. Todos los derechos reservados.</footer>
 
-  <!-- Toast notification container -->
+  
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
@@ -506,7 +510,7 @@
     const BASE_URL = 'https://api.themoviedb.org/3';
     const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
-// Variables de estado
+ 
 let currentPage = 1;
 let totalPages = 1;
 let currentGenre = 0;
@@ -515,7 +519,7 @@ let currentSort = 'popularity.desc';
 let genres = [];
 let series = [];
 
-// Elementos del DOM
+ 
 const genreSelect = document.getElementById('genre-select');
 const sortSelect = document.getElementById('sort-select');
 const seriesContainer = document.getElementById('series-container');
@@ -524,7 +528,7 @@ const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
 const pageIndicator = document.getElementById('page-indicator');
 
-// Obtener el token JWT y usuario robusto (igual que peliculas.html)
+ 
 const token = localStorage.getItem('jwt');
 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
 if (!token) {
@@ -540,7 +544,7 @@ if (!loggedInUser || !loggedInUser.id) {
   window.location.href = 'login.html';
 }
 
-// Debounce para búsqueda
+ 
 let searchTimeout;
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimeout);
@@ -551,7 +555,7 @@ searchInput.addEventListener('input', () => {
   }, 300);
 });
 
-// Paginación
+ 
 prevPageBtn.addEventListener('click', () => {
   if (currentPage > 1) {
     currentPage--;
@@ -566,21 +570,21 @@ nextPageBtn.addEventListener('click', () => {
   }
 });
 
-// Cambio de género
+ 
 genreSelect.addEventListener('change', () => {
   currentGenre = parseInt(genreSelect.value);
   currentPage = 1;
   fetchSeries();
 });
 
-// Ordenar por
+ 
 sortSelect.addEventListener('change', () => {
   currentSort = sortSelect.value;
   currentPage = 1;
   fetchSeries();
 });
 
-// Cargar géneros
+ 
 async function fetchGenres() {
   try {
     const res = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=es-ES`);
@@ -601,21 +605,21 @@ function populateGenreSelect() {
   });
 }
 
-// Cargar series
+ 
 async function fetchSeries() {
   try {
     let url;
-    // Si hay búsqueda, la API no soporta sort_by, así que ordenamos manualmente
+    
     if (currentSearchQuery) {
       url = `${BASE_URL}/search/tv?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(currentSearchQuery)}&page=${currentPage}`;
       const res = await fetch(url);
       const data = await res.json();
       let results = data.results || [];
-      // Filtrar por género si corresponde
+      
       if (currentGenre && currentGenre != 0) {
         results = results.filter(s => (s.genre_ids || []).includes(currentGenre));
       }
-      // Ordenar manualmente si corresponde
+      
       results = sortSearchResults(results, currentSort);
       series = results;
       totalPages = data.total_pages || 1;
@@ -640,7 +644,7 @@ async function fetchSeries() {
   }
 }
 
-// Ordenar manualmente resultados de búsqueda
+ 
 function sortSearchResults(results, sortBy) {
   const [field, dir] = sortBy.split('.');
   return results.slice().sort((a, b) => {
@@ -663,7 +667,7 @@ function sortSearchResults(results, sortBy) {
   });
 }
 
-// --- FAVORITOS API ---
+ 
 let favoritos = [];
 let favoritosCargados = false;
 async function fetchFavoritos(force = false) {

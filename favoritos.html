@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Favoritos - Catálogo</title>
+  <title>Favoritos - UltraFilm</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <script>
@@ -52,6 +52,10 @@
     nav a:hover {
       background-color: #e50914;
     }
+    nav a[href="guardados.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
+    }
     .btn-logout {
       background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
       color: #fff;
@@ -81,12 +85,11 @@
       padding: 0 15px 40px;
     }
 
-    /* Contenedor de favoritos */
     #favoritos-container {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;
-  min-height: calc(3 * 300px); /* 4 filas de altura aproximada */
+  min-height: calc(3 * 300px);
 }
 
     .card {
@@ -135,7 +138,6 @@
       margin-bottom: 10px;
     }
 
-    /* Botón quitar favorito */
     .remove-fav-btn {
       background-color: #e50914;
       border: none;
@@ -162,14 +164,12 @@
       font-size: 0.9rem;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 600px) {
       .card img {
         height: 200px;
       }
     }
 
-    /* Notificaciones Toast */
     #toast-container {
   position: fixed;
   top: 30px;
@@ -228,13 +228,11 @@
     <div id="favoritos-container" aria-live="polite" aria-relevant="additions"></div>
   </main>
 
-  <footer>© 2025 Catálogo Cine & Series. Todos los derechos reservados.</footer>
+  <footer>© 2025 UltraFilm Cine & Series. Todos los derechos reservados.</footer>
 
-  <!-- Contenedor para notificaciones Toast -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    // Obtener el token JWT y usuario robusto (igual que peliculas.html y series.html)
     const token = localStorage.getItem('jwt');
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!token) {
@@ -257,8 +255,7 @@
 
     const favoritosContainer = document.getElementById('favoritos-container');
 
-    // Sistema de notificaciones toast
-function showToast(message, type = 'info', duration = 3500) {
+    function showToast(message, type = 'info', duration = 3500) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
@@ -270,7 +267,6 @@ function showToast(message, type = 'info', duration = 3500) {
   }, duration);
 }
 
-// Función fetch segura para manejo de errores
 async function safeFetch(url, options = {}) {
   try {
     const res = await fetch(url, options);
@@ -289,7 +285,6 @@ async function safeFetch(url, options = {}) {
   }
 }
 
-// Cargar favoritos desde ambas APIs y unirlos
 async function loadFavoritos() {
   let favoritosSeries = [];
   let favoritosPeliculas = [];
@@ -328,7 +323,6 @@ async function loadFavoritos() {
       </article>
     `;
   }).join('');
-  // Asignar listeners de forma segura (sin duplicar)
   favoritosContainer.querySelectorAll('.remove-fav-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const itemId = btn.getAttribute('data-id');
@@ -339,21 +333,18 @@ async function loadFavoritos() {
       try {
         await quitarFavorito(itemId, tipo);
         showToast(`Eliminaste "${titulo}" de favoritos.`, 'success');
-        // Eliminar la tarjeta del DOM de inmediato con animación
         card.classList.add('removing');
         setTimeout(() => card.remove(), 250);
-        // Si ya no quedan favoritos, mostrar mensaje
         if (!favoritosContainer.querySelector('.card')) {
           favoritosContainer.innerHTML = '<p style="color:#ccc; text-align:center;">No tienes favoritos.</p>';
         }
       } catch {
         btn.disabled = false;
       }
-    }, { once: true }); // Evita listeners duplicados
+    }, { once: true });
   });
 }
 
-// Función para quitar favorito
 async function quitarFavorito(itemId, tipo) {
   if (tipo === 'serie') {
     await safeFetch('http://localhost:3001/favoritos', {
@@ -370,7 +361,6 @@ async function quitarFavorito(itemId, tipo) {
   }
 }
 
-// Cargar favoritos al iniciar
 loadFavoritos();
   </script>
 </body>

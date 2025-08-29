@@ -92,12 +92,12 @@
   </main>
   <div id="toast-container"></div>
   <script>
-    // Protección admin
+    
     const adminToken = localStorage.getItem('adminToken');
     let adminRole = null;
     if (adminToken) {
       try {
-        // Decodifica el JWT para obtener el rol
+        
         const payload = JSON.parse(atob(adminToken.split('.')[1]));
         adminRole = payload.role;
       } catch {}
@@ -106,7 +106,7 @@
       alert('Acceso solo para administradores.');
       window.location.href = 'index.html';
     }
-    // Función para cerrar sesión (logout)
+    
     function logout() {
       fetch('http://localhost:3001/logout', {
         method: 'POST',
@@ -203,7 +203,7 @@
         showToast('Error al limpiar logs', 'error');
       }
     });
-    // Modal reset contraseña
+    
     let resetUserId = null;
     function abrirResetModal(userId, username) {
       resetUserId = userId;
@@ -291,7 +291,7 @@
     }
     cargarUsuarios();
 
-    // PWA: registrar service worker y link manifest
+    
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});

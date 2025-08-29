@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Películas - Catálogo</title>
+  <title>Películas - UltraFilm</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <script>
@@ -51,6 +51,10 @@
     }
     nav a:hover {
       background-color: #e50914;
+    }
+    nav a[href="guardados.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
     }
     .btn-logout {
       background: linear-gradient(90deg, #e50914 60%, #b20710 100%);
@@ -441,7 +445,7 @@
 
     <div id="peliculas-container" aria-live="polite" aria-relevant="additions"></div>
 
-    <!-- Paginación -->
+    
     <div class="pagination">
       <button id="prev-page" disabled>Anterior</button>
       <span id="page-indicator">Página 1</span>
@@ -449,17 +453,17 @@
     </div>
   </main>
 
-  <footer>© 2025 Catálogo Cine & Series. Todos los derechos reservados.</footer>
+  <footer>© 2025 UltraFilm Cine & Series. Todos los derechos reservados.</footer>
 
-  <!-- Notificaciones Toast -->
+  
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Modal Detalle Película -->
+  
   <div id="movie-modal" class="modal" style="display:none;">
     <div class="modal-content" tabindex="0">
       <button class="modal-close" id="modal-close-btn" aria-label="Cerrar modal">&times;</button>
       <div id="modal-body">
-        <!-- Contenido dinámico -->
+        
       </div>
     </div>
   </div>

@@ -282,10 +282,10 @@
       <a href="dash.html">⬅ Volver al panel</a>
     </div>
 
-    <!-- Toast notification container -->
+    
     <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Modal de confirmación -->
+    
     <div id="modal-confirm-bg" class="modal-confirm-bg" style="display:none;">
       <div class="modal-confirm">
         <div id="modal-confirm-msg">¿Confirmas cambiar tu contraseña?</div>
@@ -298,13 +298,13 @@
   </div>
 
   <script>
-    // JWT: obtener token
+    
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
       window.location.href = 'login.html';
     }
 
-    // Toast notification system
+    
     function showToast(message, type = 'info', duration = 3500) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -317,7 +317,7 @@
       }, duration);
     }
 
-    // Safe fetch wrapper for error handling y JWT
+    
     async function safeFetch(url, options = {}) {
       options.headers = options.headers || {};
       if (url.startsWith('http://localhost:3001')) {
@@ -429,7 +429,7 @@
       });
     }
 
-    // Logout mejorado: limpiar JWT y usuario
+    
     document.getElementById('logout-btn').addEventListener('click', async () => {
       if (jwt) {
         try {

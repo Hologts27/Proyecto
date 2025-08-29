@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hub - Catálogo de Películas y Series</title>
+  <title>Hub - UltraFilm</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json">
   <style>
@@ -53,6 +53,10 @@
     main button:hover, main a.button-link:hover {
       background-color: #b20710;
     }
+    nav a[href="guardados.html"]:hover {
+      background-color: #e50914 !important;
+      color: #fff !important;
+    }
     footer {
       text-align: center;
       padding: 20px 10px;
@@ -61,7 +65,6 @@
       font-size: 0.9rem;
       margin-top: 80px;
     }
-    /* Toast notification styles */
     #toast-container {
       position: fixed;
       top: 30px;
@@ -98,7 +101,6 @@
       from { opacity: 0; transform: translateY(-20px) scale(0.98); }
       to { opacity: 0.97; transform: none; }
     }
-    /* Animaciones para favoritos y modales */
     @keyframes favAdd {
       from { background: #43e97b33; }
       to { background: none; }
@@ -134,7 +136,7 @@
 <body>
 
   <header>
-    <h1>🎬 Catálogo de Películas y Series</h1>
+  <h1>🎬 UltraFilm</h1>
   </header>
 
   <main>
@@ -143,37 +145,53 @@
     <a href="peliculas.html" class="button-link">Películas</a>
     <a href="series.html" class="button-link">Series</a>
     <a href="favoritos.html" class="button-link">Favoritos</a>
-    <a href="guardados.html" class="button-link">Guardados</a> <!-- NUEVO BOTÓN -->
-    <a href="manage.html" class="button-link">Gestionar cuenta</a> <!-- NUEVO BOTÓN -->
+    <a href="guardados.html" class="button-link">Guardados</a>
+    <a href="manage.html" class="button-link">Gestionar cuenta</a>
     
     <button id="logout-btn">Cerrar sesión</button>
   </main>
+
+  <div id="logout-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.55);z-index:10000;align-items:center;justify-content:center;">
+    <div style="background:#232323;padding:32px 24px 20px 24px;border-radius:10px;box-shadow:0 4px 32px #000a;max-width:90vw;width:340px;text-align:center;">
+      <h3 style="color:#e50914;margin-top:0;">¿Cerrar sesión?</h3>
+      <p style="color:#eee;margin-bottom:24px;">¿Seguro que quieres cerrar sesión?</p>
+      <button id="cancel-logout-btn" style="margin-right:12px;padding:10px 22px;border-radius:6px;border:none;background:#444;color:#fff;font-weight:bold;cursor:pointer;">Cancelar</button>
+      <button id="confirm-logout-btn" style="padding:10px 22px;border-radius:6px;border:none;background:#e50914;color:#fff;font-weight:bold;cursor:pointer;">Cerrar sesión</button>
+    </div>
+  </div>
   
-  <!-- Toast notification container -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <footer>
-    © 2025 Catálogo Cine & Series. Todos los derechos reservados.
+  © 2025 UltraFilm Cine & Series. Todos los derechos reservados.
   </footer>
 
   <script>
-    // Verificar usuario
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!loggedInUser || !loggedInUser.username) {
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     } else {
       document.getElementById('usuario-nombre').textContent = loggedInUser.username;
     }
 
     document.getElementById('logout-btn').addEventListener('click', () => {
-      const confirmLogout = confirm("¿Seguro que quieres cerrar sesión?");
-      if (confirmLogout) {
-        localStorage.removeItem("loggedInUser");
-        window.location.href = "index.html";
+      const modal = document.getElementById('logout-modal');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('cancel-logout-btn').focus(), 50);
+    });
+    document.getElementById('cancel-logout-btn').addEventListener('click', () => {
+      document.getElementById('logout-modal').style.display = 'none';
+    });
+    document.getElementById('confirm-logout-btn').addEventListener('click', () => {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "index.html";
+    });
+    document.getElementById('logout-modal').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('logout-modal').style.display = 'none';
       }
     });
 
-    // Toast notification system
     function showToast(message, type = 'info', duration = 3500) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -186,7 +204,6 @@
       }, duration);
     }
 
-    // Safe fetch wrapper for error handling
     async function safeFetch(url, options = {}) {
       try {
         const res = await fetch(url, options);
@@ -204,9 +221,6 @@
         throw err;
       }
     }
-
-    // Ejemplo de uso en agregar/eliminar favoritos:
-    // Reemplaza fetch por safeFetch y muestra showToast en éxito/error
   </script>
 
 </body>
